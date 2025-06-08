@@ -1,0 +1,46 @@
+
+Crie um aplicativo web do zero para um "TMS Dashboard de Controle" usando HTML, CSS e JavaScript puro. O aplicativo deve se integrar com o Supabase para gerenciamento de dados.
+
+**Requisitos Principais:**
+
+1.  **Estrutura Básica:**
+    *   Crie um `index.html` com a estrutura principal do dashboard, incluindo um cabeçalho, uma área para exibir as despesas e um botão para adicionar novas despesas.
+    *   Crie um `style.css` para estilização básica do dashboard, tornando-o visualmente agradável e responsivo.
+    *   Crie um `script.js` para toda a lógica do aplicativo.
+
+2.  **Funcionalidades do Dashboard:**
+    *   **Adicionar Despesa:** Implemente um modal (ou formulário embutido) que permita ao usuário adicionar novas despesas. O formulário deve incluir os seguintes campos:
+        *   `Item` (texto)
+        *   `Valor` (numérico)
+        *   `Forma de Pagamento` (seleção: PIX, Cartão de Crédito, Boleto à Vista, Boleto a Prazo)
+        *   `Parcela Atual` (numérico, opcional, para despesas parceladas)
+        *   `Total de Parcelas` (numérico, opcional, para despesas parceladas)
+        *   `Valor Total` (numérico, opcional, para despesas parceladas)
+        *   `Imagem` (upload de arquivo, para comprovantes)
+        *   `Data de Vencimento` (data)
+    *   **Listar Despesas:** Exiba as despesas em uma lista ou tabela no dashboard.
+    *   **Filtrar por Mês:** Adicione uma funcionalidade de filtro para que o usuário possa visualizar as despesas por mês.
+
+3.  **Integração com Supabase:**
+    *   Utilize a biblioteca `supabase-js` para todas as operações de banco de dados (inserção, leitura).
+    *   **Tabela `despesas`:** Crie e utilize uma tabela chamada `despesas` no Supabase com as seguintes colunas:
+        *   `item` (TEXT)
+        *   `valor` (NUMERIC)
+        *   `forma_pagamento` (TEXT)
+        *   `parcela_atual` (INTEGER)
+        *   `total_parcelas` (INTEGER)
+        *   `valor_total` (NUMERIC)
+        *   `imagem_url` (TEXT) - para armazenar a URL da imagem no Supabase Storage.
+        *   `data_vencimento` (DATE)
+        *   `created_at` (TIMESTAMP WITH TIME ZONE, com `DEFAULT now()`)
+    *   **Supabase Storage:** Implemente a funcionalidade de upload de imagens para um bucket no Supabase Storage e armazene a URL da imagem na coluna `imagem_url` da tabela `despesas`.
+    *   **Segurança das Chaves:** Não exponha `supabaseUrl` e `supabaseKey` diretamente no código do `script.js`. Use variáveis de ambiente do Replit para armazená-las e acessá-las de forma segura no JavaScript.
+
+**Instruções para o Replit Agent:**
+
+1.  Inicialize um novo projeto web (HTML, CSS, JS).
+2.  Configure o `script.js` para importar e inicializar o cliente Supabase, utilizando as variáveis de ambiente para as chaves.
+3.  Crie a estrutura HTML e CSS conforme descrito.
+4.  Implemente a lógica JavaScript para o modal de adicionar despesas, a manipulação do formulário e a interação com o Supabase para salvar os dados, incluindo o upload de imagens.
+5.  Desenvolva a funcionalidade de listar e filtrar as despesas.
+6.  Adicione tratamento de erros básico e feedback ao usuário para as operações do Supabase.
