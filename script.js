@@ -39,9 +39,124 @@ const valorTotalSection = document.querySelector('.valor-total-section');
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-    setupEventListeners();
+    checkAuthentication();
 });
+
+// Check authentication before initializing app
+async function checkAuthentication() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (!user || error) {
+            // No authenticated user, redirect to login
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        // User is authenticated, get profile and initialize app
+        const userProfile = await getUserProfile(user.id);
+        
+        if (!userProfile) {
+            showNotification('Perfil de usuário não encontrado', 'error');
+            await supabase.auth.signOut();
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        // Store user info and initialize
+        window.currentUser = {
+            id: user.id,
+            email: user.email,
+            name: userProfile.name,
+            role: userProfile.role
+        };
+        
+        // Update UI with user info
+        updateUserInterface();
+        
+        // Initialize the application
+        await initializeApp();
+        setupEventListeners();
+        
+    } catch (error) {
+        console.error('Authentication check failed:', error);
+        showNotification('Erro de autenticação', 'error');
+        window.location.href = '/login.html';
+    }
+}
+
+// Get user profile from database
+async function getUserProfile(userId) {
+    try {
+        const { data, error } = await supabase
+            .from('user_profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        
+        if (error) {
+            console.error('Error fetching user profile:', error);
+            return null;
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error in getUserProfile:', error);
+        return null;
+    }
+}
+
+// Update UI with user information
+function updateUserInterface() {
+    // Add user info to header
+    const header = document.querySelector('.header');
+    const userInfo = document.createElement('div');
+    userInfo.className = 'user-info';
+    userInfo.innerHTML = `
+        <div class="user-details">
+            <span class="user-name">${window.currentUser.name}</span>
+            <span class="user-role">${window.currentUser.role}</span>
+        </div>
+        <button onclick="handleLogout()" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    `;
+    
+    header.appendChild(userInfo);
+    
+    // Auto-fill user name in expense form
+    const userNameInput = document.getElementById('usuario_criacao');
+    if (userNameInput && window.currentUser.name) {
+        userNameInput.value = window.currentUser.name;
+        userNameInput.readOnly = true; // Prevent editing
+    }
+}
+
+// Handle logout
+async function handleLogout() {
+    try {
+        showLoading(true);
+        
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+            throw error;
+        }
+        
+        // Clear stored user data
+        localStorage.removeItem('tms_user');
+        window.currentUser = null;
+        
+        // Redirect to login
+        window.location.href = '/login.html';
+        
+    } catch (error) {
+        console.error('Logout error:', error);
+        showNotification('Erro ao fazer logout', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
 
 // Initialize the application
 async function initializeApp() {
