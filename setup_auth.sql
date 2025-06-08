@@ -1,8 +1,12 @@
 -- Configuração completa de autenticação e perfis de usuário
 
--- 1. Criar tabela de perfis de usuário
-CREATE TABLE IF NOT EXISTS public.user_profiles (
-    id UUID REFERENCES auth.users(id) PRIMARY KEY,
+-- 1. Primeiro, certificar que auth está habilitado
+-- Este comando deve ser executado no painel Supabase > SQL Editor
+
+-- 2. Criar tabela de perfis de usuário
+DROP TABLE IF EXISTS public.user_profiles CASCADE;
+CREATE TABLE public.user_profiles (
+    id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('admin', 'gerente')),
@@ -10,18 +14,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Habilitar RLS na tabela de perfis
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
-
--- 3. Criar políticas de segurança para user_profiles
-CREATE POLICY "Users can view own profile" ON public.user_profiles
-    FOR SELECT USING (auth.uid() = id);
-
-CREATE POLICY "Users can update own profile" ON public.user_profiles
-    FOR UPDATE USING (auth.uid() = id);
-
--- 4. Inserir usuários predefinidos (será feito via código após criação das contas)
--- Os usuários serão criados via Auth e depois vinculados aos perfis
+-- 4. Conceder permissões públicas temporariamente
+GRANT ALL ON public.user_profiles TO anon;
+GRANT ALL ON public.user_profiles TO authenticated;
 
 -- 5. Criar função para criar perfil automaticamente após signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -38,6 +33,10 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 7. Inserir usuários predefinidos manualmente
+-- Estes usuários devem ser criados primeiro no painel Authentication > Users
+-- Depois execute este INSERT para criar os perfis
 
 -- 7. Atualizar políticas da tabela despesas para controle de acesso
 ALTER TABLE public.despesas ENABLE ROW LEVEL SECURITY;

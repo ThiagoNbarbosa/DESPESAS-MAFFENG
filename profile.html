@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - TMS Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1><i class="fas fa-chart-line"></i> TMS</h1>
+                    <p>Sistema de Controle de Despesas</p>
+                </div>
+                <!-- User info will be added here by JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <button onclick="goBackToDashboard()" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Dashboard
+                </button>
+                <h2><i class="fas fa-user-circle"></i> Meu Perfil</h2>
+            </div>
+
+            <!-- Profile Content -->
+            <div class="profile-content">
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <div class="info-section">
+                            <h3>Informações Pessoais</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <label>Nome Completo</label>
+                                    <span id="profile-name">Carregando...</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>E-mail</label>
+                                    <span id="profile-email">Carregando...</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Nível de Acesso</label>
+                                    <span id="profile-role" class="role-badge">Carregando...</span>
+                                </div>
+                                <div class="info-item">
+                                    <label>Data de Criação</label>
+                                    <span id="profile-created">Carregando...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <h3>Estatísticas do Usuário</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-receipt"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="total-expenses">0</span>
+                                        <span class="stat-label">Despesas Criadas</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="total-amount">R$ 0,00</span>
+                                        <span class="stat-label">Valor Total</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="paid-expenses">0</span>
+                                        <span class="stat-label">Despesas Pagas</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="stat-content">
+                                        <span class="stat-number" id="pending-expenses">0</span>
+                                        <span class="stat-label">Despesas Pendentes</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <h3>Permissões de Acesso</h3>
+                            <div class="permissions-list">
+                                <div class="permission-item" id="view-permission">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Visualizar despesas</span>
+                                </div>
+                                <div class="permission-item" id="create-permission">
+                                    <i class="fas fa-plus"></i>
+                                    <span>Criar despesas</span>
+                                </div>
+                                <div class="permission-item" id="edit-permission">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Editar despesas</span>
+                                </div>
+                                <div class="permission-item" id="delete-permission">
+                                    <i class="fas fa-trash"></i>
+                                    <span>Excluir despesas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions">
+                            <button onclick="handleLogout()" class="logout-btn-full">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Sair do Sistema
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inject environment variables for client-side access
+        window.SUPABASE_URL = '{{ SUPABASE_URL }}';
+        window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+    </script>
+    <script src="profile.js"></script>
+</body>
+</html>
