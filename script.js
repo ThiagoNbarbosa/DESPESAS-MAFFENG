@@ -73,17 +73,9 @@ function setupEventListeners() {
     // Payment method change
     formaPagamentoSelect.addEventListener('change', handlePaymentMethodChange);
     
-    // Auto-calculate total value and format currency
-    document.getElementById('valor').addEventListener('input', function(e) {
-        formatCurrencyInput(e.target);
-        calculateTotalValue();
-        generatePaymentCalendar();
-    });
-    document.getElementById('total_parcelas').addEventListener('input', function(e) {
-        calculateTotalValue();
-        generatePaymentCalendar();
-    });
-    document.getElementById('data_vencimento').addEventListener('change', generatePaymentCalendar);
+    // Auto-calculate total value
+    document.getElementById('valor').addEventListener('input', calculateTotalValue);
+    document.getElementById('total_parcelas').addEventListener('input', calculateTotalValue);
     
     // Close modal when clicking outside
     expenseModal.addEventListener('click', function(e) {
@@ -127,12 +119,6 @@ function closeModal() {
     document.querySelector('.label-parcela').style.display = 'none';
     document.querySelector('.label-valor').style.display = 'inline';
     
-    // Clear payment calendar
-    const paymentCalendar = document.getElementById('payment-calendar');
-    if (paymentCalendar) {
-        paymentCalendar.innerHTML = '';
-    }
-    
     // Reset file input display
     document.querySelector('.file-input-display span').textContent = 'Clique para selecionar uma imagem';
 }
@@ -172,84 +158,17 @@ function handlePaymentMethodChange(e) {
     }
 }
 
-// Format currency input with Brazilian format
-function formatCurrencyInput(input) {
-    let value = input.value.replace(/\D/g, ''); // Remove non-digits
-    value = (value / 100).toFixed(2); // Convert to decimal
-    value = value.replace('.', ','); // Use comma for decimal
-    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Add thousand separators
-    input.value = value;
-}
-
-// Get numeric value from formatted currency
-function getNumericValue(formattedValue) {
-    return parseFloat(formattedValue.replace(/\./g, '').replace(',', '.')) || 0;
-}
-
-// Format number to Brazilian currency display
-function formatBRLDisplay(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value);
-}
-
 // Calculate total value automatically
 function calculateTotalValue() {
-    const valorInput = document.getElementById('valor');
-    const valorParcela = getNumericValue(valorInput.value);
+    const valorParcela = parseFloat(document.getElementById('valor').value) || 0;
     const totalParcelas = parseInt(document.getElementById('total_parcelas').value) || 1;
     const valorTotal = valorParcela * totalParcelas;
     
     if (valorParcela > 0 && totalParcelas > 0) {
-        document.getElementById('valor_total').value = formatBRLDisplay(valorTotal).replace('R$', '').trim();
+        document.getElementById('valor_total').value = valorTotal.toFixed(2);
     } else {
         document.getElementById('valor_total').value = '';
     }
-}
-
-// Generate payment calendar visualization
-function generatePaymentCalendar() {
-    const valorParcela = getNumericValue(document.getElementById('valor').value);
-    const totalParcelas = parseInt(document.getElementById('total_parcelas').value) || 1;
-    const dataVencimento = document.getElementById('data_vencimento').value;
-    
-    if (!valorParcela || !dataVencimento || totalParcelas <= 1) {
-        const container = document.getElementById('payment-calendar');
-        if (container) container.innerHTML = '';
-        return;
-    }
-    
-    let container = document.getElementById('payment-calendar');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'payment-calendar';
-        container.className = 'payment-calendar';
-        document.querySelector('.valor-total-section').appendChild(container);
-    }
-    
-    const startDate = new Date(dataVencimento);
-    let calendarHTML = '<h4>Cronograma de Pagamentos</h4><div class="payment-cards">';
-    
-    for (let i = 0; i < totalParcelas; i++) {
-        const paymentDate = new Date(startDate);
-        paymentDate.setMonth(paymentDate.getMonth() + i);
-        
-        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 
-                           'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        
-        calendarHTML += `
-            <div class="payment-card">
-                <div class="payment-number">${i + 1}/${totalParcelas}</div>
-                <div class="payment-month">${monthNames[paymentDate.getMonth()]}</div>
-                <div class="payment-year">${paymentDate.getFullYear()}</div>
-                <div class="payment-value">${formatBRLDisplay(valorParcela)}</div>
-            </div>
-        `;
-    }
-    
-    calendarHTML += '</div>';
-    container.innerHTML = calendarHTML;
 }
 
 // Handle form submission
@@ -261,17 +180,14 @@ async function handleFormSubmit(e) {
         
         // Get form data
         const formData = new FormData(expenseForm);
-        const valorFormatted = formData.get('valor');
-        const valorNumerico = getNumericValue(valorFormatted);
-        
         const expenseData = {
             item: formData.get('item'),
-            valor: valorNumerico,
+            valor: parseFloat(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
             parcela_atual: 1, // Always start with first installment for new expenses
             total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : 1,
-            valor_total: formData.get('total_parcelas') ? valorNumerico * parseInt(formData.get('total_parcelas')) : valorNumerico,
+            valor_total: formData.get('valor_total') ? parseFloat(formData.get('valor_total')) : parseFloat(formData.get('valor')),
             imagem_url: null
         };
         
@@ -435,7 +351,7 @@ function renderExpenses() {
     expensesTbody.innerHTML = filteredExpenses.map(expense => `
         <tr>
             <td>${expense.item}</td>
-            <td>${formatBRLDisplay(expense.valor)}</td>
+            <td>R$ ${expense.valor.toFixed(2).replace('.', ',')}</td>
             <td><span class="payment-badge ${getPaymentClass(expense.forma_pagamento)}">${expense.forma_pagamento}</span></td>
             <td>${formatInstallments(expense.parcela_atual, expense.total_parcelas)}</td>
             <td>${formatDate(expense.data_vencimento)}</td>
@@ -473,7 +389,7 @@ function updateSummary() {
     const totalExpensesCount = filteredExpenses.length;
     
     // Update DOM
-    monthlyTotal.textContent = formatBRLDisplay(monthlyTotalValue);
+    monthlyTotal.textContent = `R$ ${monthlyTotalValue.toFixed(2).replace('.', ',')}`;
     totalExpenses.textContent = totalExpensesCount;
 }
 
