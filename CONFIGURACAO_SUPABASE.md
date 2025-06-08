@@ -219,8 +219,82 @@ ORDER BY created_at;
 - Dashboard: `/` (redireciona para login se não autenticado)
 - Perfil: `/profile.html`
 
+## 5. COMO DEFINIR NÍVEIS DE ACESSO (Admin vs Gerente)
+
+### O que cada nível pode fazer:
+
+**ADMINISTRADOR:**
+- Visualizar todas as despesas do sistema
+- Criar novas despesas  
+- Editar qualquer despesa (de qualquer usuário)
+- Excluir despesas
+- Marcar despesas como pagas
+- Acesso completo ao sistema
+
+**GERENTE:**
+- Visualizar todas as despesas do sistema
+- Criar novas despesas
+- Editar apenas suas próprias despesas
+- Não pode excluir despesas
+- Pode marcar suas despesas como pagas
+
+### Como alterar o nível de um usuário:
+
+1. **Via SQL Editor no Supabase:**
+```sql
+-- Para tornar um usuário ADMIN
+UPDATE public.user_profiles 
+SET role = 'admin' 
+WHERE email = 'email@usuario.com';
+
+-- Para tornar um usuário GERENTE
+UPDATE public.user_profiles 
+SET role = 'gerente' 
+WHERE email = 'email@usuario.com';
+
+-- Verificar todos os usuários e seus níveis
+SELECT email, name, role, created_at 
+FROM public.user_profiles 
+ORDER BY role, name;
+```
+
+2. **Criando novos usuários com nível específico:**
+   - Crie o usuário em Authentication > Users
+   - Copie o ID do usuário
+   - Execute o SQL:
+```sql
+INSERT INTO public.user_profiles (id, email, name, role) VALUES 
+('ID_DO_USUARIO', 'novo@email.com', 'Nome Completo', 'admin');
+-- ou 'gerente' para nível gerente
+```
+
+### Controle de Acesso no Sistema:
+
+O sistema automaticamente controla o que cada usuário pode fazer:
+
+- **Botões de edição/exclusão:** Só aparecem se o usuário tiver permissão
+- **Formulários:** Adaptam-se ao nível do usuário
+- **Página de perfil:** Mostra as permissões específicas do usuário
+
 ## Credenciais Finais
 - **Admin**: thiago@maffeng.com / TMS@2025!
 - **Admin**: ygor@maffeng.com / TMS@2025!  
 - **Gerente**: user@maffeng.com / TMS@2025!
 - **Gerente**: mikaelly@maffeng.com / TMS@2025!
+
+## Resolução de Problemas Comuns
+
+### Login retorna "email_provider_disabled"
+1. Vá para Authentication > Settings
+2. Em "Auth Providers", certifique-se que "Email" está ATIVADO
+3. Salve as configurações
+
+### Usuário criado mas não consegue fazer login
+1. Verifique se "Auto Confirm User" foi marcado
+2. Se não foi, vá em Authentication > Users
+3. Clique no usuário e marque "Email Confirmed"
+
+### Despesas não aparecem para gerentes
+1. Verifique se o usuário tem perfil criado na tabela user_profiles
+2. Execute: `SELECT * FROM user_profiles WHERE email = 'email@usuario.com'`
+3. Se não existir, crie manualmente

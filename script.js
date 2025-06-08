@@ -108,28 +108,71 @@ async function getUserProfile(userId) {
 
 // Update UI with user information
 function updateUserInterface() {
-    // Add user info to header
-    const header = document.querySelector('.header');
+    // Find header content and update structure
+    const headerContent = document.querySelector('.header-content');
+    
+    // Remove existing user info if present
+    const existingUserInfo = headerContent.querySelector('.user-info');
+    if (existingUserInfo) {
+        existingUserInfo.remove();
+    }
+    
+    // Wrap existing content in header-title
+    const existingTitle = headerContent.querySelector('h1');
+    const existingSubtitle = headerContent.querySelector('p');
+    
+    if (existingTitle && !existingTitle.parentElement.classList.contains('header-title')) {
+        const titleWrapper = document.createElement('div');
+        titleWrapper.className = 'header-title';
+        titleWrapper.appendChild(existingTitle);
+        titleWrapper.appendChild(existingSubtitle);
+        headerContent.innerHTML = '';
+        headerContent.appendChild(titleWrapper);
+    }
+    
+    // Add user info to the right side of header
     const userInfo = document.createElement('div');
     userInfo.className = 'user-info';
+    
+    // Capitalize first letter of each word in name
+    const capitalizedName = window.currentUser.name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    
+    // Translate role to Portuguese
+    const roleTranslation = {
+        'admin': 'Administrador',
+        'gerente': 'Gerente'
+    };
+    const translatedRole = roleTranslation[window.currentUser.role] || window.currentUser.role;
+    
     userInfo.innerHTML = `
-        <div class="user-details">
-            <span class="user-name">${window.currentUser.name}</span>
-            <span class="user-role">${window.currentUser.role}</span>
+        <div class="user-details" onclick="openProfilePage()" title="Clique para ver seu perfil">
+            <span class="user-name">${capitalizedName}</span>
+            <span class="user-role">${translatedRole}</span>
         </div>
-        <button onclick="handleLogout()" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i>
-        </button>
+        <div class="user-actions">
+            <button onclick="handleLogout()" class="btn-logout" title="Sair do sistema">
+                <i class="fas fa-sign-out-alt"></i>
+                Sair
+            </button>
+        </div>
     `;
     
-    header.appendChild(userInfo);
+    headerContent.appendChild(userInfo);
     
     // Auto-fill user name in expense form
     const userNameInput = document.getElementById('usuario_criacao');
     if (userNameInput && window.currentUser.name) {
-        userNameInput.value = window.currentUser.name;
+        userNameInput.value = capitalizedName;
         userNameInput.readOnly = true; // Prevent editing
     }
+}
+
+// Open profile page
+function openProfilePage() {
+    window.location.href = '/profile.html';
 }
 
 // Handle logout
