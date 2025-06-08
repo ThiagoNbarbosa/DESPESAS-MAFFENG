@@ -374,6 +374,53 @@ body {
     padding-left: 2.5rem;
 }
 
+/* Form Help Text */
+.form-help {
+    display: block;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+/* Auto-calculated label */
+.auto-calc-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* Readonly input styling */
+input[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Smooth transitions for form sections */
+.parcelas-section,
+.valor-total-section {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.parcelas-section.show,
+.valor-total-section.show {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 200px;
+    }
+}
+
 .form-group input:focus,
 .form-group select:focus {
     outline: none;

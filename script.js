@@ -73,6 +73,10 @@ function setupEventListeners() {
     // Payment method change
     formaPagamentoSelect.addEventListener('change', handlePaymentMethodChange);
     
+    // Auto-calculate total value
+    document.getElementById('valor').addEventListener('input', calculateTotalValue);
+    document.getElementById('total_parcelas').addEventListener('input', calculateTotalValue);
+    
     // Close modal when clicking outside
     expenseModal.addEventListener('click', function(e) {
         if (e.target === expenseModal) {
@@ -104,25 +108,65 @@ function closeModal() {
     expenseModal.style.display = 'none';
     document.body.style.overflow = 'auto';
     expenseForm.reset();
+    
+    // Reset form sections
     parcelasSection.style.display = 'none';
     valorTotalSection.style.display = 'none';
+    parcelasSection.classList.remove('show');
+    valorTotalSection.classList.remove('show');
+    
+    // Reset labels
+    document.querySelector('.label-parcela').style.display = 'none';
+    document.querySelector('.label-valor').style.display = 'inline';
+    
+    // Reset file input display
     document.querySelector('.file-input-display span').textContent = 'Clique para selecionar uma imagem';
 }
 
 // Handle payment method change
 function handlePaymentMethodChange(e) {
     const paymentMethod = e.target.value;
-    const showInstallments = paymentMethod === 'Cartão de Crédito' || paymentMethod === 'Boleto a Prazo';
+    const showInstallments = paymentMethod === 'cartao_credito' || paymentMethod === 'boleto_prazo';
+    
+    const labelParcela = document.querySelector('.label-parcela');
+    const labelValor = document.querySelector('.label-valor');
     
     if (showInstallments) {
-        parcelasSection.style.display = 'grid';
+        // Show installment sections with animation
+        parcelasSection.style.display = 'block';
         valorTotalSection.style.display = 'block';
+        parcelasSection.classList.add('show');
+        valorTotalSection.classList.add('show');
+        
+        // Change label to "Valor da Parcela"
+        labelParcela.style.display = 'inline';
+        labelValor.style.display = 'none';
     } else {
+        // Hide installment sections
         parcelasSection.style.display = 'none';
         valorTotalSection.style.display = 'none';
+        parcelasSection.classList.remove('show');
+        valorTotalSection.classList.remove('show');
+        
+        // Change label back to "Valor"
+        labelParcela.style.display = 'none';
+        labelValor.style.display = 'inline';
+        
         // Clear installment fields
-        document.getElementById('parcela_atual').value = '';
         document.getElementById('total_parcelas').value = '';
+        document.getElementById('valor_total').value = '';
+    }
+}
+
+// Calculate total value automatically
+function calculateTotalValue() {
+    const valorParcela = parseFloat(document.getElementById('valor').value) || 0;
+    const totalParcelas = parseInt(document.getElementById('total_parcelas').value) || 1;
+    const valorTotal = valorParcela * totalParcelas;
+    
+    if (valorParcela > 0 && totalParcelas > 0) {
+        document.getElementById('valor_total').value = valorTotal.toFixed(2);
+    } else {
         document.getElementById('valor_total').value = '';
     }
 }

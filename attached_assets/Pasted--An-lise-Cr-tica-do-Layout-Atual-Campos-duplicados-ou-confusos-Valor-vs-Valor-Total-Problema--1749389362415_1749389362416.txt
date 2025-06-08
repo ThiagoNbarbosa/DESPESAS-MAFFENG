@@ -1,0 +1,78 @@
+🔍 Análise Crítica do Layout Atual
+🧩 Campos duplicados ou confusos:
+Valor vs Valor Total
+
+Problema: O campo “Valor” e “Valor Total” podem parecer a mesma coisa para o usuário.
+
+Interpretação provável:
+
+“Valor” seria o valor da parcela única ou da parcela mensal.
+
+“Valor Total” seria o valor acumulado de todas as parcelas.
+
+✅ Solução sugerida: Unificar ou deixar claro com descrições ou tooltips:
+
+Ex:
+
+Valor da Parcela (R$)
+
+Número de Parcelas
+
+Valor Total (calculado automaticamente)
+
+🔁 Parcelamento confuso
+Parcela Atual e Total de Parcelas
+
+Problema: Esses campos normalmente são usados para visualização, não para input manual em um cadastro de nova despesa.
+
+Exemplo de erro: Usuário colocando “Parcela atual = 3” numa nova despesa não faz sentido.
+
+✅ Solução sugerida:
+
+Remover “Parcela Atual” do formulário.
+
+Manter apenas “Número de Parcelas” se a despesa for parcelada.
+
+O controle de “parcela atual” pode ser gerado automaticamente depois (no backend).
+
+🔎 Falta de clareza no comportamento de campos
+Campo “Valor Total” é editável
+
+Se esse campo é calculado automaticamente com base em “valor da parcela” × “nº parcelas”, ele não deve ser editável.
+
+✅ Solução sugerida: Tornar esse campo readonly ou ocultá-lo até ser necessário.
+
+📷 Upload de imagem
+Upload de comprovante (imagem)
+
+Está bem posicionado e compreensível.
+
+Mas poderia ter um texto de apoio:
+“(opcional) Anexe uma imagem do comprovante da despesa”
+
+✅ Sugestão de nova estrutura
+Layout simplificado e mais claro
+plaintext
+Copiar
+Editar
+Item *                 [_____________________]
+Forma de Pagamento *   [Dropdown ▼] 
+
+Valor da Parcela *     [R$ ____ ]
+Número de Parcelas     [  __  ]        ← deixar claro: opcional ou só aparece em pagamentos parcelados
+Data de Vencimento *   [ __ / __ / ____ ]
+
+[ ] Calcular valor total automaticamente  ← checkbox opcional
+
+Valor Total            [R$ ____ ] ← readonly, se possível
+
+Comprovante (Imagem)
+[ ícone upload ] Clique para selecionar uma imagem
+
+[ Cancelar ]   [ Salvar Despesa ]
+💡 Outras melhorias possíveis
+Validar dinamicamente o campo de “parcelas” ao escolher forma de pagamento (ex: só mostrar se for “boleto a prazo”, “cartão parcelado” etc).
+
+Ícones pequenos nos inputs para reforçar UX (ex: calendário, cifrão).
+
+Microanimações nos campos ao selecionar forma de pagamento (transição suave ao aparecer campos de parcelamento).

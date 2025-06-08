@@ -111,30 +111,35 @@
                 </button>
             </div>
             <form id="expense-form" class="expense-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="item">Item *</label>
-                        <input type="text" id="item" name="item" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="valor">Valor *</label>
-                        <div class="currency-input">
-                            <span class="currency-symbol">R$</span>
-                            <input type="number" id="valor" name="valor" step="0.01" min="0" required placeholder="0,00">
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="item">Item *</label>
+                    <input type="text" id="item" name="item" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="forma_pagamento">Forma de Pagamento *</label>
+                    <select id="forma_pagamento" name="forma_pagamento" required>
+                        <option value="">Selecione...</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="pix">PIX</option>
+                        <option value="cartao_debito">Cartão de Débito</option>
+                        <option value="cartao_credito">Cartão de Crédito</option>
+                        <option value="boleto_vista">Boleto à Vista</option>
+                        <option value="boleto_prazo">Boleto a Prazo</option>
+                        <option value="transferencia">Transferência</option>
+                    </select>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="forma_pagamento">Forma de Pagamento *</label>
-                        <select id="forma_pagamento" name="forma_pagamento" required>
-                            <option value="">Selecione...</option>
-                            <option value="PIX">PIX</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="Boleto à Vista">Boleto à Vista</option>
-                            <option value="Boleto a Prazo">Boleto a Prazo</option>
-                        </select>
+                        <label for="valor">
+                            <span class="label-parcela" style="display: none;">Valor da Parcela *</span>
+                            <span class="label-valor">Valor *</span>
+                        </label>
+                        <div class="currency-input">
+                            <span class="currency-symbol">R$</span>
+                            <input type="number" id="valor" name="valor" step="0.01" min="0" required placeholder="0,00">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label for="data_vencimento">Data de Vencimento *</label>
@@ -142,27 +147,26 @@
                     </div>
                 </div>
 
-                <div class="form-row parcelas-section" style="display: none;">
-                    <div class="form-group">
-                        <label for="parcela_atual">Parcela Atual</label>
-                        <input type="number" id="parcela_atual" name="parcela_atual" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label for="total_parcelas">Total de Parcelas</label>
-                        <input type="number" id="total_parcelas" name="total_parcelas" min="1">
-                    </div>
+                <div class="form-group parcelas-section" style="display: none;">
+                    <label for="total_parcelas">Número de Parcelas</label>
+                    <input type="number" id="total_parcelas" name="total_parcelas" min="1" max="36" placeholder="Ex: 12">
+                    <small class="form-help">Informe o número total de parcelas</small>
                 </div>
 
                 <div class="form-group valor-total-section" style="display: none;">
-                    <label for="valor_total">Valor Total</label>
+                    <label for="valor_total">
+                        Valor Total 
+                        <span class="auto-calc-label">(calculado automaticamente)</span>
+                    </label>
                     <div class="currency-input">
                         <span class="currency-symbol">R$</span>
-                        <input type="number" id="valor_total" name="valor_total" step="0.01" min="0" placeholder="0,00">
+                        <input type="number" id="valor_total" name="valor_total" step="0.01" min="0" placeholder="0,00" readonly>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="imagem">Comprovante (Imagem)</label>
+                    <small class="form-help">(opcional) Anexe uma imagem do comprovante da despesa</small>
                     <div class="file-input-wrapper">
                         <input type="file" id="imagem" name="imagem" accept="image/*">
                         <div class="file-input-display">
