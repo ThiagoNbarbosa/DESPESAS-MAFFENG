@@ -18,7 +18,7 @@ FOR SELECT USING (bucket_id = 'receipts');
 -- 4. Adicionar colunas para status de pagamento e usuário
 ALTER TABLE public.despesas ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pendente';
 ALTER TABLE public.despesas ADD COLUMN IF NOT EXISTS data_pagamento TIMESTAMP;
-ALTER TABLE public.despesas ADD COLUMN IF NOT EXISTS despesa_pai_id UUID REFERENCES public.despesas(id);
+ALTER TABLE public.despesas ADD COLUMN IF NOT EXISTS despesa_pai_id BIGINT REFERENCES public.despesas(id);
 ALTER TABLE public.despesas ADD COLUMN IF NOT EXISTS usuario_criacao TEXT DEFAULT 'Usuário';
 
 -- 5. Criar índices para melhor performance
