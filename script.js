@@ -215,6 +215,11 @@ async function loadExpenses() {
             .order('created_at', { ascending: false });
         
         if (error) {
+            if (error.code === '42P01') {
+                // Table doesn't exist - show setup message
+                showSetupMessage();
+                return;
+            }
             throw error;
         }
         
@@ -223,8 +228,58 @@ async function loadExpenses() {
         
     } catch (error) {
         console.error('Error loading expenses:', error);
-        showNotification('Erro ao carregar despesas: ' + error.message, 'error');
+        if (error.code === '42P01') {
+            showSetupMessage();
+        } else {
+            showNotification('Erro ao carregar despesas: ' + error.message, 'error');
+        }
     }
+}
+
+// Show setup message when table doesn't exist
+function showSetupMessage() {
+    const tableContainer = document.querySelector('.table-container');
+    tableContainer.innerHTML = `
+        <div class="setup-message">
+            <div class="setup-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h3>Configuração necessária</h3>
+            <p>Para usar o TMS Dashboard, você precisa criar a tabela de despesas no seu banco Supabase.</p>
+            <div class="setup-instructions">
+                <h4>Passos para configurar:</h4>
+                <ol>
+                    <li>Acesse o <a href="https://supabase.com/dashboard/projects" target="_blank">painel do Supabase</a></li>
+                    <li>Vá para o seu projeto → SQL Editor</li>
+                    <li>Execute o seguinte SQL:</li>
+                </ol>
+                <div class="sql-code">
+                    <code>
+CREATE TABLE despesas (
+    id SERIAL PRIMARY KEY,
+    item TEXT NOT NULL,
+    valor NUMERIC NOT NULL,
+    forma_pagamento TEXT NOT NULL,
+    parcela_atual INTEGER,
+    total_parcelas INTEGER,
+    valor_total NUMERIC,
+    imagem_url TEXT,
+    data_vencimento DATE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE despesas ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all operations" ON despesas
+FOR ALL USING (true) WITH CHECK (true);
+                    </code>
+                </div>
+                <button id="reload-btn" class="btn btn-primary" onclick="location.reload()">
+                    <i class="fas fa-refresh"></i> Recarregar após configuração
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 // Render expenses in table
