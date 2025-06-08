@@ -255,8 +255,9 @@ function showSetupMessage() {
                 </ol>
                 <div class="sql-code">
                     <code>
-CREATE TABLE despesas (
-    id SERIAL PRIMARY KEY,
+-- Create the table
+CREATE TABLE public.despesas (
+    id BIGSERIAL PRIMARY KEY,
     item TEXT NOT NULL,
     valor NUMERIC NOT NULL,
     forma_pagamento TEXT NOT NULL,
@@ -265,13 +266,21 @@ CREATE TABLE despesas (
     valor_total NUMERIC,
     imagem_url TEXT,
     data_vencimento DATE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-ALTER TABLE despesas ENABLE ROW LEVEL SECURITY;
+-- Enable RLS
+ALTER TABLE public.despesas ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all operations" ON despesas
+-- Create policy for public access
+CREATE POLICY "Allow all operations" ON public.despesas
 FOR ALL USING (true) WITH CHECK (true);
+
+-- Grant permissions
+GRANT ALL ON public.despesas TO anon;
+GRANT ALL ON public.despesas TO authenticated;
+GRANT USAGE, SELECT ON SEQUENCE public.despesas_id_seq TO anon;
+GRANT USAGE, SELECT ON SEQUENCE public.despesas_id_seq TO authenticated;
                     </code>
                 </div>
                 <button id="reload-btn" class="btn btn-primary" onclick="location.reload()">
