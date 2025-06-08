@@ -185,9 +185,9 @@ async function handleFormSubmit(e) {
             valor: parseFloat(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
-            parcela_atual: formData.get('parcela_atual') ? parseInt(formData.get('parcela_atual')) : null,
-            total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : null,
-            valor_total: formData.get('valor_total') ? parseFloat(formData.get('valor_total')) : null,
+            parcela_atual: 1, // Always start with first installment for new expenses
+            total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : 1,
+            valor_total: formData.get('valor_total') ? parseFloat(formData.get('valor_total')) : parseFloat(formData.get('valor')),
             imagem_url: null
         };
         
