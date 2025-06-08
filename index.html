@@ -85,7 +85,7 @@
                                 <th>Parcelas</th>
                                 <th>Vencimento</th>
                                 <th>Comprovante</th>
-                                <th>Data Criação</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="expenses-tbody">
@@ -100,6 +100,21 @@
             </div>
         </div>
     </main>
+
+    <!-- Expense Details Modal -->
+    <div id="details-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Detalhes da Despesa</h3>
+                <button id="close-details-modal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="details-content" class="details-content">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Add Expense Modal -->
     <div id="expense-modal" class="modal">

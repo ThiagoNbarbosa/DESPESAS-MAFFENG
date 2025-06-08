@@ -92,6 +92,17 @@ function setupEventListeners() {
         }
     });
     
+    // Details modal event listeners
+    const detailsModal = document.getElementById('details-modal');
+    const closeDetailsBtn = document.getElementById('close-details-modal');
+    
+    closeDetailsBtn.addEventListener('click', closeDetailsModal);
+    detailsModal.addEventListener('click', function(e) {
+        if (e.target === detailsModal) {
+            closeDetailsModal();
+        }
+    });
+    
     // File input display
     const fileInput = document.getElementById('imagem');
     const fileDisplay = document.querySelector('.file-input-display span');
@@ -209,6 +220,199 @@ function formatCurrencyDisplay(value) {
     });
 }
 
+// Mark expense as paid
+async function markAsPaid(expenseId) {
+    try {
+        showLoading(true);
+        
+        const { error } = await supabase
+            .from('despesas')
+            .update({ 
+                status: 'pago',
+                data_pagamento: new Date().toISOString()
+            })
+            .eq('id', expenseId);
+        
+        if (error) {
+            throw error;
+        }
+        
+        showNotification('Despesa marcada como paga!', 'success');
+        await loadExpenses();
+        updateSummary();
+        
+    } catch (error) {
+        console.error('Error marking as paid:', error);
+        showNotification('Erro ao marcar despesa como paga', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Show expense details modal
+async function showExpenseDetails(expenseId) {
+    try {
+        showLoading(true);
+        
+        // Get expense details and related installments
+        const { data: expense, error: expenseError } = await supabase
+            .from('despesas')
+            .select('*')
+            .eq('id', expenseId)
+            .single();
+            
+        if (expenseError) {
+            throw expenseError;
+        }
+        
+        // Get all related installments (if this is part of a parcelated expense)
+        let relatedExpenses = [expense];
+        if (expense.despesa_pai_id || expense.total_parcelas > 1) {
+            const parentId = expense.despesa_pai_id || expense.id;
+            const { data: allInstallments, error: installmentsError } = await supabase
+                .from('despesas')
+                .select('*')
+                .or(`id.eq.${parentId},despesa_pai_id.eq.${parentId}`)
+                .order('parcela_atual');
+                
+            if (!installmentsError) {
+                relatedExpenses = allInstallments;
+            }
+        }
+        
+        openDetailsModal(expense, relatedExpenses);
+        
+    } catch (error) {
+        console.error('Error loading expense details:', error);
+        showNotification('Erro ao carregar detalhes da despesa', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// Open details modal
+function openDetailsModal(expense, relatedExpenses) {
+    const detailsModal = document.getElementById('details-modal');
+    const detailsContent = document.getElementById('details-content');
+    
+    const currentDate = new Date();
+    const totalPaid = relatedExpenses.filter(e => e.status === 'pago').length;
+    const totalPending = relatedExpenses.filter(e => e.status === 'pendente').length;
+    
+    detailsContent.innerHTML = `
+        <div class="expense-overview">
+            <div class="overview-header">
+                <h4 class="overview-title">${expense.item}</h4>
+                <span class="overview-status status-${expense.status}">${expense.status}</span>
+            </div>
+            <div class="overview-grid">
+                <div class="overview-item">
+                    <span class="overview-label">Valor da Parcela</span>
+                    <span class="overview-value">R$ ${formatCurrencyDisplay(expense.valor)}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Forma de Pagamento</span>
+                    <span class="overview-value">${expense.forma_pagamento}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Total de Parcelas</span>
+                    <span class="overview-value">${expense.total_parcelas}x</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Valor Total</span>
+                    <span class="overview-value">R$ ${formatCurrencyDisplay(expense.valor_total || expense.valor)}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Parcelas Pagas</span>
+                    <span class="overview-value">${totalPaid}/${expense.total_parcelas}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Parcelas Pendentes</span>
+                    <span class="overview-value">${totalPending}</span>
+                </div>
+            </div>
+        </div>
+        
+        ${expense.total_parcelas > 1 ? `
+            <div class="installments-section">
+                <h5 class="section-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Cronograma de Parcelas
+                </h5>
+                <div class="installments-timeline">
+                    ${relatedExpenses.map(installment => {
+                        const dueDate = new Date(installment.data_vencimento);
+                        const isOverdue = installment.status === 'pendente' && dueDate < currentDate;
+                        const isCurrent = installment.status === 'pendente' && !isOverdue;
+                        
+                        return `
+                            <div class="installment-card ${installment.status === 'pago' ? 'paid' : isOverdue ? 'overdue' : isCurrent ? 'current' : ''}">
+                                <div class="installment-header">
+                                    <span class="installment-number">Parcela ${installment.parcela_atual}/${installment.total_parcelas}</span>
+                                    <span class="installment-status status-${installment.status}">${installment.status}</span>
+                                </div>
+                                
+                                ${installment.status === 'pendente' ? `
+                                    <button class="installment-pay-btn" onclick="markAsPaid('${installment.id}')">
+                                        <i class="fas fa-check"></i> Marcar como Pago
+                                    </button>
+                                ` : ''}
+                                
+                                <div class="installment-info">
+                                    <div class="overview-item">
+                                        <span class="overview-label">Valor</span>
+                                        <span class="overview-value">R$ ${formatCurrencyDisplay(installment.valor)}</span>
+                                    </div>
+                                    <div class="overview-item">
+                                        <span class="overview-label">Vencimento</span>
+                                        <span class="overview-value">${formatDate(installment.data_vencimento)}</span>
+                                    </div>
+                                    ${installment.data_pagamento ? `
+                                        <div class="overview-item">
+                                            <span class="overview-label">Data do Pagamento</span>
+                                            <span class="overview-value">${formatDate(installment.data_pagamento.split('T')[0])}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${isOverdue ? `
+                                        <div class="overview-item">
+                                            <span class="overview-label" style="color: #dc3545;">Status</span>
+                                            <span class="overview-value" style="color: #dc3545;">Vencida</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        ` : ''}
+        
+        ${expense.imagem_url ? `
+            <div class="installments-section">
+                <h5 class="section-title">
+                    <i class="fas fa-image"></i>
+                    Comprovante
+                </h5>
+                <div class="receipt-preview">
+                    <a href="${expense.imagem_url}" target="_blank" class="receipt-link">
+                        <img src="${expense.imagem_url}" alt="Comprovante" style="max-width: 300px; border-radius: 8px; border: 2px solid #e1e8ed;">
+                    </a>
+                </div>
+            </div>
+        ` : ''}
+    `;
+    
+    detailsModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close details modal
+function closeDetailsModal() {
+    const detailsModal = document.getElementById('details-modal');
+    detailsModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
 // Calculate total value automatically
 function calculateTotalValue() {
     const valorParcelaFormatted = document.getElementById('valor').value;
@@ -245,6 +449,7 @@ async function handleFormSubmit(e) {
             parcela_atual: 1, // Always start with first installment for new expenses
             total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : 1,
             valor_total: formData.get('valor_total') ? getNumericValue(formData.get('valor_total')) : getNumericValue(formData.get('valor')),
+            status: 'pendente', // Default status for new expenses
             imagem_url: null
         };
         
