@@ -265,6 +265,11 @@ async function handleFormSubmit(e) {
             throw error;
         }
         
+        // Create future installments if this is a parcelated expense
+        if (expenseData.total_parcelas > 1) {
+            await createFutureInstallments(data[0], expenseData);
+        }
+        
         showNotification('Despesa adicionada com sucesso!', 'success');
         closeModal();
         await loadExpenses();
@@ -275,6 +280,45 @@ async function handleFormSubmit(e) {
         showNotification('Erro ao salvar despesa: ' + error.message, 'error');
     } finally {
         showLoading(false);
+    }
+}
+
+// Create future installments for parcelated expenses
+async function createFutureInstallments(firstInstallment, originalData) {
+    try {
+        const futureInstallments = [];
+        const baseDate = new Date(originalData.data_vencimento);
+        
+        for (let i = 2; i <= originalData.total_parcelas; i++) {
+            const nextDate = new Date(baseDate);
+            nextDate.setMonth(nextDate.getMonth() + (i - 1));
+            
+            const futureInstallment = {
+                item: originalData.item,
+                valor: originalData.valor,
+                forma_pagamento: originalData.forma_pagamento,
+                data_vencimento: nextDate.toISOString().split('T')[0],
+                parcela_atual: i,
+                total_parcelas: originalData.total_parcelas,
+                valor_total: originalData.valor_total,
+                imagem_url: originalData.imagem_url,
+                status: 'pendente',
+                despesa_pai_id: firstInstallment.id
+            };
+            
+            futureInstallments.push(futureInstallment);
+        }
+        
+        const { error } = await supabase
+            .from('despesas')
+            .insert(futureInstallments);
+            
+        if (error) {
+            console.error('Error creating future installments:', error);
+        }
+        
+    } catch (error) {
+        console.error('Error in createFutureInstallments:', error);
     }
 }
 
@@ -406,14 +450,28 @@ function renderExpenses() {
     noExpenses.style.display = 'none';
     
     expensesTbody.innerHTML = filteredExpenses.map(expense => `
-        <tr>
+        <tr class="expense-row ${expense.status === 'pago' ? 'expense-paid' : ''}" data-expense-id="${expense.id}">
             <td>${expense.item}</td>
             <td>R$ ${formatCurrencyDisplay(expense.valor)}</td>
             <td><span class="payment-badge ${getPaymentClass(expense.forma_pagamento)}">${expense.forma_pagamento}</span></td>
             <td>${formatInstallments(expense.parcela_atual, expense.total_parcelas)}</td>
             <td>${formatDate(expense.data_vencimento)}</td>
             <td>${expense.imagem_url ? `<a href="${expense.imagem_url}" target="_blank" class="receipt-link">Ver Comprovante</a>` : '-'}</td>
-            <td>${formatDateTime(expense.created_at)}</td>
+            <td>
+                <div class="expense-actions">
+                    ${expense.status === 'pendente' ? 
+                        `<button class="btn-action btn-pay" onclick="markAsPaid('${expense.id}')">
+                            <i class="fas fa-check"></i> Pagar
+                         </button>` : 
+                        `<span class="status-paid">
+                            <i class="fas fa-check-circle"></i> Pago
+                         </span>`
+                    }
+                    <button class="btn-action btn-details" onclick="showExpenseDetails('${expense.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
         </tr>
     `).join('');
 }
