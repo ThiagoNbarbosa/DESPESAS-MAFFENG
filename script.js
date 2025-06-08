@@ -1,9 +1,20 @@
 // Supabase Configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'your-supabase-url';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-supabase-anon-key';
+// Get credentials from window object (injected by HTML template)
+const supabaseUrl = window.SUPABASE_URL || '';
+const supabaseKey = window.SUPABASE_ANON_KEY || '';
 
 // Initialize Supabase client
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+let supabase;
+if (supabaseUrl && supabaseKey) {
+    try {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('Supabase initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize Supabase:', error);
+    }
+} else {
+    console.error('Missing Supabase credentials. Please check environment variables.');
+}
 
 // Global variables
 let expenses = [];

@@ -187,6 +187,11 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Inject environment variables for client-side access
+        window.SUPABASE_URL = '{{ SUPABASE_URL }}';
+        window.SUPABASE_ANON_KEY = '{{ SUPABASE_ANON_KEY }}';
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
