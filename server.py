@@ -46,9 +46,19 @@ class TemplateHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 def run_server(port=5000):
     handler = TemplateHTTPRequestHandler
     
-    with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
-        print(f"Server running at http://0.0.0.0:{port}/")
-        httpd.serve_forever()
+    # Allow socket reuse
+    socketserver.TCPServer.allow_reuse_address = True
+    
+    try:
+        with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:
+            print(f"Server running at http://0.0.0.0:{port}/")
+            httpd.serve_forever()
+    except OSError as e:
+        if e.errno == 98:  # Address already in use
+            print(f"Port {port} is in use, trying port {port + 1}")
+            run_server(port + 1)
+        else:
+            raise
 
 if __name__ == "__main__":
     run_server()
