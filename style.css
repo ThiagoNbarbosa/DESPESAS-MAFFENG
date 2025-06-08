@@ -472,12 +472,12 @@ input[readonly] {
 
 /* Expense Row Styles */
 .expense-row.expense-paid {
-    background-color: #f8fff9;
-    opacity: 0.8;
+    background-color: #e8f5e8;
+    border-left: 4px solid #28a745;
 }
 
 .expense-row.expense-paid td {
-    color: #6c757d;
+    color: #2d5a3d;
 }
 
 /* Modal Large */

@@ -120,6 +120,12 @@ function setupEventListeners() {
 function openModal() {
     expenseModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
+    
+    // Load saved user name
+    const savedUser = localStorage.getItem('tms_usuario');
+    if (savedUser) {
+        document.getElementById('usuario_criacao').value = savedUser;
+    }
 }
 
 // Close modal
@@ -307,12 +313,20 @@ function openDetailsModal(expense, relatedExpenses) {
             </div>
             <div class="overview-grid">
                 <div class="overview-item">
-                    <span class="overview-label">Valor da Parcela</span>
-                    <span class="overview-value">R$ ${formatCurrencyDisplay(expense.valor)}</span>
+                    <span class="overview-label">Usuário</span>
+                    <span class="overview-value">${expense.usuario_criacao || 'Não informado'}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Data de Vencimento</span>
+                    <span class="overview-value">${formatDate(expense.data_vencimento)}</span>
                 </div>
                 <div class="overview-item">
                     <span class="overview-label">Forma de Pagamento</span>
                     <span class="overview-value">${expense.forma_pagamento}</span>
+                </div>
+                <div class="overview-item">
+                    <span class="overview-label">Valor da Parcela</span>
+                    <span class="overview-value">R$ ${formatCurrencyDisplay(expense.valor)}</span>
                 </div>
                 <div class="overview-item">
                     <span class="overview-label">Total de Parcelas</span>
@@ -391,12 +405,17 @@ function openDetailsModal(expense, relatedExpenses) {
             <div class="installments-section">
                 <h5 class="section-title">
                     <i class="fas fa-image"></i>
-                    Comprovante
+                    Comprovante da Despesa
                 </h5>
                 <div class="receipt-preview">
-                    <a href="${expense.imagem_url}" target="_blank" class="receipt-link">
-                        <img src="${expense.imagem_url}" alt="Comprovante" style="max-width: 300px; border-radius: 8px; border: 2px solid #e1e8ed;">
-                    </a>
+                    <div class="receipt-container">
+                        <img src="${expense.imagem_url}" alt="Comprovante - ${expense.item}" 
+                             style="max-width: 100%; height: auto; border-radius: 8px; border: 2px solid #e1e8ed; box-shadow: 0 4px 8px rgba(0,0,0,0.1); cursor: pointer;"
+                             onclick="window.open('${expense.imagem_url}', '_blank')">
+                        <p style="margin-top: 0.5rem; color: #6c757d; font-size: 0.9rem;">
+                            <i class="fas fa-external-link-alt"></i> Clique na imagem para visualizar em tamanho completo
+                        </p>
+                    </div>
                 </div>
             </div>
         ` : ''}
@@ -442,6 +461,7 @@ async function handleFormSubmit(e) {
         // Get form data
         const formData = new FormData(expenseForm);
         const expenseData = {
+            usuario_criacao: formData.get('usuario_criacao'),
             item: formData.get('item'),
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
@@ -475,6 +495,9 @@ async function handleFormSubmit(e) {
             await createFutureInstallments(data[0], expenseData);
         }
         
+        // Save user name for future use
+        localStorage.setItem('tms_usuario', expenseData.usuario_criacao);
+        
         showNotification('Despesa adicionada com sucesso!', 'success');
         closeModal();
         await loadExpenses();
@@ -499,6 +522,7 @@ async function createFutureInstallments(firstInstallment, originalData) {
             nextDate.setMonth(nextDate.getMonth() + (i - 1));
             
             const futureInstallment = {
+                usuario_criacao: originalData.usuario_criacao,
                 item: originalData.item,
                 valor: originalData.valor,
                 forma_pagamento: originalData.forma_pagamento,
