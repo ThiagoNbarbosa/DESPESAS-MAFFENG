@@ -73,9 +73,17 @@ function setupEventListeners() {
     // Payment method change
     formaPagamentoSelect.addEventListener('change', handlePaymentMethodChange);
     
-    // Auto-calculate total value
-    document.getElementById('valor').addEventListener('input', calculateTotalValue);
+    // Auto-calculate total value and currency formatting
+    document.getElementById('valor').addEventListener('input', function(e) {
+        formatCurrencyInput(e.target);
+        calculateTotalValue();
+    });
     document.getElementById('total_parcelas').addEventListener('input', calculateTotalValue);
+    
+    // Format currency on valor_total when it changes
+    document.getElementById('valor_total').addEventListener('input', function(e) {
+        formatCurrencyInput(e.target);
+    });
     
     // Close modal when clicking outside
     expenseModal.addEventListener('click', function(e) {
@@ -158,14 +166,63 @@ function handlePaymentMethodChange(e) {
     }
 }
 
+// Format currency input with Brazilian formatting
+function formatCurrencyInput(input) {
+    let value = input.value.replace(/\D/g, ''); // Remove non-digits
+    
+    if (value === '') {
+        input.value = '';
+        return;
+    }
+    
+    // Convert to cents (divide by 100 for decimal places)
+    value = parseInt(value);
+    
+    // Format as currency with Brazilian formatting
+    const formatted = (value / 100).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    
+    input.value = formatted;
+}
+
+// Get numeric value from formatted currency input
+function getNumericValue(formattedValue) {
+    if (!formattedValue) return 0;
+    
+    // Remove formatting and convert to float
+    const cleanValue = formattedValue
+        .replace(/\./g, '') // Remove thousand separators
+        .replace(',', '.'); // Replace comma with dot for decimal
+    
+    return parseFloat(cleanValue) || 0;
+}
+
+// Format currency for display (from numeric value)
+function formatCurrencyDisplay(value) {
+    if (!value && value !== 0) return '0,00';
+    
+    return value.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
 // Calculate total value automatically
 function calculateTotalValue() {
-    const valorParcela = parseFloat(document.getElementById('valor').value) || 0;
+    const valorParcelaFormatted = document.getElementById('valor').value;
+    const valorParcela = getNumericValue(valorParcelaFormatted);
     const totalParcelas = parseInt(document.getElementById('total_parcelas').value) || 1;
     const valorTotal = valorParcela * totalParcelas;
     
     if (valorParcela > 0 && totalParcelas > 0) {
-        document.getElementById('valor_total').value = valorTotal.toFixed(2);
+        const valorTotalInput = document.getElementById('valor_total');
+        const formatted = valorTotal.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        valorTotalInput.value = formatted;
     } else {
         document.getElementById('valor_total').value = '';
     }
@@ -182,12 +239,12 @@ async function handleFormSubmit(e) {
         const formData = new FormData(expenseForm);
         const expenseData = {
             item: formData.get('item'),
-            valor: parseFloat(formData.get('valor')),
+            valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
             parcela_atual: 1, // Always start with first installment for new expenses
             total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : 1,
-            valor_total: formData.get('valor_total') ? parseFloat(formData.get('valor_total')) : parseFloat(formData.get('valor')),
+            valor_total: formData.get('valor_total') ? getNumericValue(formData.get('valor_total')) : getNumericValue(formData.get('valor')),
             imagem_url: null
         };
         
@@ -351,7 +408,7 @@ function renderExpenses() {
     expensesTbody.innerHTML = filteredExpenses.map(expense => `
         <tr>
             <td>${expense.item}</td>
-            <td>R$ ${expense.valor.toFixed(2).replace('.', ',')}</td>
+            <td>R$ ${formatCurrencyDisplay(expense.valor)}</td>
             <td><span class="payment-badge ${getPaymentClass(expense.forma_pagamento)}">${expense.forma_pagamento}</span></td>
             <td>${formatInstallments(expense.parcela_atual, expense.total_parcelas)}</td>
             <td>${formatDate(expense.data_vencimento)}</td>
@@ -389,7 +446,7 @@ function updateSummary() {
     const totalExpensesCount = filteredExpenses.length;
     
     // Update DOM
-    monthlyTotal.textContent = `R$ ${monthlyTotalValue.toFixed(2).replace('.', ',')}`;
+    monthlyTotal.textContent = `R$ ${formatCurrencyDisplay(monthlyTotalValue)}`;
     totalExpenses.textContent = totalExpensesCount;
 }
 
