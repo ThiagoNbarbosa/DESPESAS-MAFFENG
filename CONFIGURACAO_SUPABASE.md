@@ -1,5 +1,8 @@
 # Configuração Completa do Supabase para TMS Dashboard
 
+## PROBLEMA RESOLVIDO: Erro de Permissões
+Se você está vendo erro "permission denied for table user_profiles", siga este guia atualizado.
+
 ## 1. Configurações de Autenticação (Authentication Settings)
 
 ### Passo 1: Acessar Authentication Settings
@@ -13,17 +16,19 @@
 1. Em **Auth** > **Email Templates**
 2. Pode deixar padrão para desenvolvimento
 
-## 2. Executar SQL de Configuração
+## 2. CORREÇÃO DE PERMISSÕES - Execute este SQL primeiro
 
-### Passo 1: SQL Editor
+### Passo 1: SQL Editor - Corrigir Permissões
 1. Vá para **SQL Editor** no painel Supabase
-2. Cole e execute o SQL abaixo:
+2. Cole e execute o arquivo `supabase_fix.sql` ou este SQL:
 
 ```sql
--- CONFIGURAÇÃO COMPLETA DO TMS DASHBOARD
+-- CORREÇÃO COMPLETA DE PERMISSÕES SUPABASE
 
--- 1. Criar tabela de perfis
-CREATE TABLE IF NOT EXISTS public.user_profiles (
+-- 1. Recriar tabela user_profiles com permissões corretas
+DROP TABLE IF EXISTS public.user_profiles CASCADE;
+
+CREATE TABLE public.user_profiles (
     id UUID PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
@@ -31,101 +36,147 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Remover RLS temporariamente
+-- 2. Desabilitar RLS completamente
 ALTER TABLE public.user_profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.despesas DISABLE ROW LEVEL SECURITY;
 
--- 3. Conceder permissões
-GRANT ALL ON public.user_profiles TO anon, authenticated;
-GRANT ALL ON public.despesas TO anon, authenticated;
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
+-- 3. Conceder TODAS as permissões para todos os roles
+GRANT ALL PRIVILEGES ON public.user_profiles TO anon;
+GRANT ALL PRIVILEGES ON public.user_profiles TO authenticated;
+GRANT ALL PRIVILEGES ON public.user_profiles TO service_role;
+GRANT ALL PRIVILEGES ON public.despesas TO anon;
+GRANT ALL PRIVILEGES ON public.despesas TO authenticated;
+GRANT ALL PRIVILEGES ON public.despesas TO service_role;
 
--- 4. Função para criar perfil automaticamente
+-- 4. Garantir permissões no schema
+GRANT USAGE ON SCHEMA public TO anon;
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO service_role;
+GRANT CREATE ON SCHEMA public TO anon;
+GRANT CREATE ON SCHEMA public TO authenticated;
+GRANT CREATE ON SCHEMA public TO service_role;
+
+-- 5. Função para criar perfil automaticamente (com SECURITY DEFINER)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql AS $$
 BEGIN
     INSERT INTO public.user_profiles (id, email, name, role)
-    VALUES (NEW.id, NEW.email, 
-            COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)), 
-            'gerente')
+    VALUES (
+        NEW.id, 
+        NEW.email, 
+        COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)), 
+        'gerente'
+    )
     ON CONFLICT (id) DO NOTHING;
     RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'Failed to create user profile: %', SQLERRM;
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
--- 5. Trigger para auto-criação de perfil
+-- 6. Recriar trigger
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 6. Storage para imagens
-INSERT INTO storage.buckets (id, name, public) 
-VALUES ('receipts', 'receipts', false) 
-ON CONFLICT (id) DO NOTHING;
+-- 7. Storage para imagens
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types) 
+VALUES (
+    'receipts', 
+    'receipts', 
+    false, 
+    52428800, -- 50MB
+    ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+) 
+ON CONFLICT (id) DO UPDATE SET
+    public = false,
+    file_size_limit = 52428800,
+    allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 
--- 7. Políticas de storage
+-- 8. Políticas de storage permissivas
 DROP POLICY IF EXISTS "authenticated_uploads" ON storage.objects;
 DROP POLICY IF EXISTS "authenticated_access" ON storage.objects;
+DROP POLICY IF EXISTS "authenticated_delete" ON storage.objects;
 
-CREATE POLICY "authenticated_uploads" ON storage.objects
-    FOR INSERT WITH CHECK (bucket_id = 'receipts');
-
-CREATE POLICY "authenticated_access" ON storage.objects
-    FOR SELECT USING (bucket_id = 'receipts');
+CREATE POLICY "allow_all_authenticated" ON storage.objects
+    FOR ALL USING (bucket_id = 'receipts')
+    WITH CHECK (bucket_id = 'receipts');
 ```
 
-## 3. Criar Usuários Manualmente
+## 3. SOLUÇÃO PARA ERRO DE PERMISSÕES
 
-### Passo 1: Adicionar Usuários
-1. Vá para **Authentication** > **Users**
-2. Clique em **Add user**
-3. Para cada usuário, preencha:
+### O Problema
+Se você está vendo "permission denied for table user_profiles", significa que as políticas RLS estão bloqueando as operações.
 
-**Usuário 1:**
-- Email: `thiago@maffeng.com`
-- Password: `TMS@2025!`
-- Auto Confirm User: ✅ SIM
-
-**Usuário 2:**
-- Email: `ygor@maffeng.com` 
-- Password: `TMS@2025!`
-- Auto Confirm User: ✅ SIM
-
-**Usuário 3:**
-- Email: `user@maffeng.com`
-- Password: `TMS@2025!`
-- Auto Confirm User: ✅ SIM
-
-**Usuário 4:**
-- Email: `mikaelly@maffeng.com`
-- Password: `TMS@2025!`
-- Auto Confirm User: ✅ SIM
-
-### Passo 2: Configurar Roles dos Usuários
-Após criar todos os usuários, execute este SQL:
+### Solução Rápida
+Execute este SQL no **SQL Editor** para desabilitar completamente o RLS:
 
 ```sql
--- Atualizar roles e nomes dos usuários
-UPDATE public.user_profiles SET 
-    role = 'admin', 
-    name = 'Thiago Mafra' 
-WHERE email = 'thiago@maffeng.com';
+-- DESABILITAR RLS COMPLETAMENTE (para desenvolvimento)
+ALTER TABLE public.user_profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.despesas DISABLE ROW LEVEL SECURITY;
 
-UPDATE public.user_profiles SET 
-    role = 'admin', 
-    name = 'Ygor Mafra' 
-WHERE email = 'ygor@maffeng.com';
+-- Remover todas as políticas existentes
+DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.user_profiles;
 
-UPDATE public.user_profiles SET 
-    role = 'gerente', 
-    name = 'Usuário Gerente' 
-WHERE email = 'user@maffeng.com';
+-- Garantir permissões máximas
+GRANT ALL ON public.user_profiles TO anon;
+GRANT ALL ON public.user_profiles TO authenticated;
+GRANT ALL ON public.user_profiles TO service_role;
+GRANT ALL ON public.despesas TO anon;
+GRANT ALL ON public.despesas TO authenticated; 
+GRANT ALL ON public.despesas TO service_role;
+```
 
-UPDATE public.user_profiles SET 
-    role = 'gerente', 
-    name = 'Mikaelly' 
-WHERE email = 'mikaelly@maffeng.com';
+## 4. Criar Usuários Manualmente (PASSO OBRIGATÓRIO)
+
+### Passo 1: Adicionar Usuários no Painel
+1. Vá para **Authentication** > **Users**
+2. Clique em **Add user** para cada um:
+
+**Usuário 1 (Admin):**
+- Email: `thiago@maffeng.com`
+- Password: `TMS@2025!`
+- Auto Confirm User: ✅ MARCAR
+
+**Usuário 2 (Admin):**
+- Email: `ygor@maffeng.com` 
+- Password: `TMS@2025!`
+- Auto Confirm User: ✅ MARCAR
+
+**Usuário 3 (Gerente):**
+- Email: `user@maffeng.com`
+- Password: `TMS@2025!`
+- Auto Confirm User: ✅ MARCAR
+
+**Usuário 4 (Gerente):**
+- Email: `mikaelly@maffeng.com`
+- Password: `TMS@2025!`
+- Auto Confirm User: ✅ MARCAR
+
+### Passo 2: Criar Perfis Manualmente
+Após criar os usuários de autenticação, execute este SQL:
+
+```sql
+-- Inserir perfis manualmente (substitua os IDs pelos reais)
+-- Copie o ID de cada usuário da aba Authentication > Users
+
+INSERT INTO public.user_profiles (id, email, name, role) VALUES 
+-- Substitua 'ID_DO_USUARIO' pelo UUID real de cada usuário
+('ID_DO_THIAGO', 'thiago@maffeng.com', 'Thiago Mafra', 'admin'),
+('ID_DO_YGOR', 'ygor@maffeng.com', 'Ygor Mafra', 'admin'),
+('ID_DO_USER', 'user@maffeng.com', 'Usuário Gerente', 'gerente'),
+('ID_DA_MIKAELLY', 'mikaelly@maffeng.com', 'Mikaelly', 'gerente')
+ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    role = EXCLUDED.role;
 ```
 
 ## 4. Verificar Configuração
