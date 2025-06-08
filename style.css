@@ -109,13 +109,14 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #b91c1c 0%, #1e40af 100%);
+    background: #383a96;
     color: white;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(185, 28, 28, 0.4);
+    box-shadow: 0 4px 15px rgba(56, 58, 150, 0.4);
+    background: #4a4ca8;
 }
 
 .btn-secondary {
@@ -154,7 +155,7 @@ body {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #b91c1c 0%, #1e40af 100%);
+    background: #383a96;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -353,11 +354,31 @@ body {
     transition: border-color 0.3s ease;
 }
 
+/* Currency Input Styling */
+.currency-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    left: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.currency-input input {
+    padding-left: 2.5rem;
+}
+
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
-    border-color: #b91c1c;
-    box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.1);
+    border-color: #383a96;
+    box-shadow: 0 0 0 3px rgba(56, 58, 150, 0.1);
 }
 
 .file-input-wrapper {
@@ -383,8 +404,8 @@ body {
 }
 
 .file-input-display:hover {
-    border-color: #b91c1c;
-    background: #fef2f2;
+    border-color: #383a96;
+    background: #f8f9ff;
 }
 
 .file-input-display i {
@@ -558,7 +579,7 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #b91c1c 0%, #1e40af 100%);
+    background: #383a96;
     display: flex;
     align-items: center;
     justify-content: center;
