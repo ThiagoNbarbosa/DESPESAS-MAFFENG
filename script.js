@@ -309,29 +309,34 @@ function closeModal() {
 // Handle payment method change
 function handlePaymentMethodChange(e) {
     const paymentMethod = e.target.value;
-    const showInstallments = paymentMethod === 'cartao_credito' || paymentMethod === 'boleto_prazo';
+    const isInstallmentPayment = paymentMethod === 'cartao_credito' || paymentMethod === 'boleto_prazo';
     
     const labelParcela = document.querySelector('.label-parcela');
     const labelValor = document.querySelector('.label-valor');
     
-    if (showInstallments) {
-        // Show installment sections with animation
-        parcelasSection.style.display = 'block';
-        valorTotalSection.style.display = 'block';
-        parcelasSection.classList.add('show');
-        valorTotalSection.classList.add('show');
-        
-        // Change label to "Valor da Parcela"
-        labelParcela.style.display = 'inline';
-        labelValor.style.display = 'none';
-    } else {
+    // For installment payments, hide installment fields and show only total value
+    if (isInstallmentPayment) {
         // Hide installment sections
         parcelasSection.style.display = 'none';
         valorTotalSection.style.display = 'none';
         parcelasSection.classList.remove('show');
         valorTotalSection.classList.remove('show');
         
-        // Change label back to "Valor"
+        // Keep label as "Valor" (total expense value)
+        labelParcela.style.display = 'none';
+        labelValor.style.display = 'inline';
+        
+        // Clear installment fields
+        document.getElementById('total_parcelas').value = '';
+        document.getElementById('valor_total').value = '';
+    } else {
+        // For other payment methods, hide installment sections
+        parcelasSection.style.display = 'none';
+        valorTotalSection.style.display = 'none';
+        parcelasSection.classList.remove('show');
+        valorTotalSection.classList.remove('show');
+        
+        // Keep label as "Valor"
         labelParcela.style.display = 'none';
         labelValor.style.display = 'inline';
         
@@ -618,25 +623,30 @@ async function handleFormSubmit(e) {
         
         // Get form data
         const formData = new FormData(expenseForm);
+        
+        // Validate required image field
+        const imageFile = formData.get('imagem');
+        if (!imageFile || imageFile.size === 0) {
+            showNotification('Por favor, selecione uma imagem do comprovante', 'error');
+            return;
+        }
+        
         const expenseData = {
             usuario_criacao: formData.get('usuario_criacao'),
             item: formData.get('item'),
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
-            parcela_atual: 1, // Always start with first installment for new expenses
-            total_parcelas: formData.get('total_parcelas') ? parseInt(formData.get('total_parcelas')) : 1,
-            valor_total: formData.get('valor_total') ? getNumericValue(formData.get('valor_total')) : getNumericValue(formData.get('valor')),
-            status: 'pendente', // Default status for new expenses
+            parcela_atual: 1, 
+            total_parcelas: 1, // Always set to 1 since we're not creating installments anymore
+            valor_total: getNumericValue(formData.get('valor')), // Use the same value for total
+            status: 'pendente',
             imagem_url: null
         };
         
-        // Handle image upload
-        const imageFile = formData.get('imagem');
-        if (imageFile && imageFile.size > 0) {
-            const imageUrl = await uploadImage(imageFile);
-            expenseData.imagem_url = imageUrl;
-        }
+        // Handle image upload (now required)
+        const imageUrl = await uploadImage(imageFile);
+        expenseData.imagem_url = imageUrl;
         
         // Save to database
         const { data, error } = await supabase
@@ -646,11 +656,6 @@ async function handleFormSubmit(e) {
         
         if (error) {
             throw error;
-        }
-        
-        // Create future installments if this is a parcelated expense
-        if (expenseData.total_parcelas > 1) {
-            await createFutureInstallments(data[0], expenseData);
         }
         
         // Save user name for future use
