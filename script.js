@@ -37,16 +37,39 @@ const formaPagamentoSelect = document.getElementById('forma_pagamento');
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize app without authentication check to prevent redirect loops
-    initializeApp().then(() => {
-        setupEventListeners();
-        console.log('App initialized successfully');
-    }).catch(error => {
-        console.error('Error initializing app:', error);
-        // Still set up event listeners even if initialization fails
-        setupEventListeners();
+    // Try to get user info from authentication first
+    tryGetCurrentUser().then(() => {
+        initializeApp().then(() => {
+            setupEventListeners();
+            console.log('App initialized successfully');
+        }).catch(error => {
+            console.error('Error initializing app:', error);
+            setupEventListeners();
+        });
     });
 });
+
+// Try to get current user info without redirecting
+async function tryGetCurrentUser() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (user && !error) {
+            const userProfile = await getUserProfile(user.id);
+            if (userProfile) {
+                window.currentUser = {
+                    id: user.id,
+                    email: user.email,
+                    name: userProfile.name,
+                    role: userProfile.role
+                };
+                console.log('User authenticated:', userProfile.name);
+            }
+        }
+    } catch (error) {
+        console.log('No authenticated user found');
+    }
+}
 
 // Check authentication before initializing app (disabled to prevent redirect loops)
 async function checkAuthentication() {
@@ -244,10 +267,14 @@ function openModal() {
     expenseModal.style.display = 'block';
     document.body.style.overflow = 'hidden';
     
-    // Load saved user name
-    const savedUser = localStorage.getItem('tms_usuario');
-    if (savedUser) {
-        document.getElementById('usuario_criacao').value = savedUser;
+    // Auto-fill user field with current user or default
+    const userInput = document.getElementById('usuario_criacao');
+    if (window.currentUser && window.currentUser.name) {
+        userInput.value = window.currentUser.name;
+    } else {
+        // Fallback to saved user name or default user
+        const savedUser = localStorage.getItem('tms_usuario');
+        userInput.value = savedUser || 'Usuário Padrão';
     }
 }
 
@@ -537,8 +564,16 @@ async function handleFormSubmit(e) {
             return;
         }
         
+        // Get user name from form or use current user
+        let userName = formData.get('usuario_criacao');
+        if (!userName && window.currentUser && window.currentUser.name) {
+            userName = window.currentUser.name;
+        } else if (!userName) {
+            userName = localStorage.getItem('tms_usuario') || 'Usuário Padrão';
+        }
+
         const expenseData = {
-            usuario_criacao: formData.get('usuario_criacao'),
+            usuario_criacao: userName,
             item: formData.get('item'),
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
