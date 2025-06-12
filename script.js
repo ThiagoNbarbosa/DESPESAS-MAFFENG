@@ -193,10 +193,43 @@ async function handleLogout() {
     }
 }
 
+// Load categories from database
+async function loadCategories() {
+    try {
+        const { data: categories, error } = await supabase
+            .from('categories')
+            .select('*')
+            .order('name');
+
+        if (error) {
+            throw error;
+        }
+
+        // Populate category dropdown
+        const categorySelect = document.getElementById('category_id');
+        categorySelect.innerHTML = '<option value="">Selecione uma categoria...</option>';
+        
+        categories.forEach(category => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name;
+            categorySelect.appendChild(option);
+        });
+
+        // Store categories globally for later use
+        window.expenseCategories = categories;
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        showNotification('Erro ao carregar categorias', 'error');
+    }
+}
+
 // Initialize the application
 async function initializeApp() {
     try {
         showLoading(true);
+        await loadCategories();
         await loadExpenses();
         updateSummary();
         showLoading(false);
@@ -589,6 +622,7 @@ async function handleFormSubmit(e) {
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
+            category_id: formData.get('category_id'),
             parcela_atual: 1, 
             total_parcelas: 1, // Always set to 1 since we're not creating installments anymore
             valor_total: getNumericValue(formData.get('valor')), // Use the same value for total
@@ -660,7 +694,13 @@ async function loadExpenses() {
     try {
         const { data, error } = await supabase
             .from('despesas')
-            .select('*')
+            .select(`
+                *,
+                categories (
+                    id,
+                    name
+                )
+            `)
             .order('created_at', { ascending: false });
         
         if (error) {

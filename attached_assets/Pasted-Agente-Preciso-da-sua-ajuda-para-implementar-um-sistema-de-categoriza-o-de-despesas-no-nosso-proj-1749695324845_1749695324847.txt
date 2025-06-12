@@ -1,0 +1,33 @@
+Agente,
+Preciso da sua ajuda para implementar um sistema de categorização de despesas no nosso projeto.
+Objetivo:
+Permitir que os usuários categorizem as despesas registradas com base em uma lista predefinida.
+Categorias a serem implementadas (já inseridas no banco de dados):
+Pagamento funcionários
+Material
+Mão de Obra
+Prestador de serviços
+Aluguel de ferramentas
+Manutenção em veículo
+Estrutura do Banco de Dados (Supabase):
+Já configurei as seguintes tabelas e colunas no Supabase. Por favor, certifique-se de que o código da aplicação interaja corretamente com elas:
+Tabela categories:
+id (UUID, Chave Primária)
+name (TEXT, Único, Não Nulo)
+Esta tabela armazena as categorias listadas acima.
+Tabela public.despesas (sua tabela de despesas):
+Possui uma nova coluna: category_id (UUID, Chave Estrangeira referenciando categories.id).
+Esta coluna vinculará cada despesa à sua categoria correspondente.
+Tarefas para você (Agente):
+Modificações no Backend/API (se aplicável):
+Crie ou modifique um endpoint para buscar a lista de categorias da tabela categories do Supabase. Este endpoint será usado pelo frontend para popular as opções de categoria.
+Ao salvar uma nova despesa (ou editar uma existente) na tabela public.despesas, certifique-se de que a lógica do backend receba o category_id selecionado pelo usuário e o armazene corretamente na coluna category_id.
+Ao buscar despesas para exibição, inclua a informação da categoria (o name da categoria) para que o usuário possa ver a qual categoria cada despesa pertence. Isso geralmente envolve um JOIN entre as tabelas public.despesas e categories na consulta Supabase/SQL.
+Modificações no Frontend (UI):
+Na interface de registro/edição de despesas, adicione um campo de seleção (dropdown, select box ou rádio buttons) que liste as categorias disponíveis. As opções devem ser carregadas dinamicamente do backend (usando o endpoint que você criou/modificou).
+Certifique-se de que a seleção do usuário seja enviada ao backend quando a despesa for salva.
+Na interface de visualização de despesas (por exemplo, uma lista ou tabela), exiba o nome da categoria para cada despesa, em vez de apenas o ID.
+Considerações Adicionais:
+Garanta que a validação de dados seja adequada para o category_id (por exemplo, que um category_id válido seja fornecido, se aplicável).
+Pense em como lidar com despesas existentes que não têm uma categoria atribuída (elas terão category_id nulo inicialmente).
+Por favor, forneça o código necessário para essas modificações, incluindo exemplos de como o frontend e o backend interagiriam com o Supabase para gerenciar essas categorias. Se houver alguma dependência ou biblioteca específica que você precise usar (como a biblioteca Supabase JS/Python), mencione-a."

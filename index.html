@@ -83,6 +83,7 @@
                         <thead>
                             <tr>
                                 <th>Item</th>
+                                <th>Categoria</th>
                                 <th>Valor</th>
                                 <th>Pagamento</th>
                                 <th>Parcelas</th>
@@ -151,6 +152,14 @@
                         <option value="boleto_vista">Boleto à Vista</option>
                         <option value="boleto_prazo">Boleto a Prazo</option>
                         <option value="transferencia">Transferência</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="category_id">Categoria *</label>
+                    <select id="category_id" name="category_id" required>
+                        <option value="">Selecione uma categoria...</option>
+                        <!-- Categories will be loaded dynamically -->
                     </select>
                 </div>
 
