@@ -796,6 +796,7 @@ function renderExpenses() {
     expensesTbody.innerHTML = filteredExpenses.map(expense => `
         <tr class="expense-row ${expense.status === 'pago' ? 'expense-paid' : ''}" data-expense-id="${expense.id}">
             <td>${expense.item}</td>
+            <td><span class="category-badge">${expense.categories ? expense.categories.name : 'Sem categoria'}</span></td>
             <td>R$ ${formatCurrencyDisplay(expense.valor)}</td>
             <td><span class="payment-badge ${getPaymentClass(expense.forma_pagamento)}">${expense.forma_pagamento}</span></td>
             <td>${formatInstallments(expense.parcela_atual, expense.total_parcelas)}</td>
