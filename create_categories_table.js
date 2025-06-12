@@ -32,18 +32,14 @@ async function createCategoriesTable() {
         if (createTableError) {
             console.log('RPC method not available, trying direct table creation...');
             
-            // Try alternative approach - just insert categories and let Supabase create the table
+            // Business-focused categories for construction/service companies
             const categories = [
-                { name: 'Alimentação', description: 'Gastos com comida e bebidas', color: '#28a745' },
-                { name: 'Transporte', description: 'Combustível, transporte público, Uber', color: '#007bff' },
-                { name: 'Moradia', description: 'Aluguel, condomínio, IPTU', color: '#6f42c1' },
-                { name: 'Saúde', description: 'Consultas, medicamentos, plano de saúde', color: '#dc3545' },
-                { name: 'Educação', description: 'Cursos, livros, materiais', color: '#fd7e14' },
-                { name: 'Lazer', description: 'Cinema, restaurantes, viagens', color: '#20c997' },
-                { name: 'Roupas', description: 'Vestuário e acessórios', color: '#e83e8c' },
-                { name: 'Tecnologia', description: 'Eletrônicos, softwares, internet', color: '#17a2b8' },
-                { name: 'Casa', description: 'Móveis, decoração, utensílios', color: '#6c757d' },
-                { name: 'Outros', description: 'Gastos diversos', color: '#343a40' }
+                { name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas', color: '#28a745' },
+                { name: 'Material', description: 'Materiais de construção e insumos', color: '#007bff' },
+                { name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada', color: '#6f42c1' },
+                { name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados', color: '#dc3545' },
+                { name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas', color: '#fd7e14' },
+                { name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos', color: '#20c997' }
             ];
 
             const { data: insertData, error: insertError } = await supabase
@@ -60,18 +56,14 @@ async function createCategoriesTable() {
         } else {
             console.log('Categories table created successfully');
             
-            // Insert predefined categories
+            // Business-focused categories for construction/service companies
             const categories = [
-                { name: 'Alimentação', description: 'Gastos com comida e bebidas', color: '#28a745' },
-                { name: 'Transporte', description: 'Combustível, transporte público, Uber', color: '#007bff' },
-                { name: 'Moradia', description: 'Aluguel, condomínio, IPTU', color: '#6f42c1' },
-                { name: 'Saúde', description: 'Consultas, medicamentos, plano de saúde', color: '#dc3545' },
-                { name: 'Educação', description: 'Cursos, livros, materiais', color: '#fd7e14' },
-                { name: 'Lazer', description: 'Cinema, restaurantes, viagens', color: '#20c997' },
-                { name: 'Roupas', description: 'Vestuário e acessórios', color: '#e83e8c' },
-                { name: 'Tecnologia', description: 'Eletrônicos, softwares, internet', color: '#17a2b8' },
-                { name: 'Casa', description: 'Móveis, decoração, utensílios', color: '#6c757d' },
-                { name: 'Outros', description: 'Gastos diversos', color: '#343a40' }
+                { name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas', color: '#28a745' },
+                { name: 'Material', description: 'Materiais de construção e insumos', color: '#007bff' },
+                { name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada', color: '#6f42c1' },
+                { name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados', color: '#dc3545' },
+                { name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas', color: '#fd7e14' },
+                { name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos', color: '#20c997' }
             ];
 
             const { data: insertData, error: insertError } = await supabase

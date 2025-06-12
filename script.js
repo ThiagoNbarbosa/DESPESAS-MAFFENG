@@ -196,18 +196,14 @@ async function handleLogout() {
 // Load categories (hardcoded for now)
 async function loadCategories() {
     try {
-        // Hardcoded categories for immediate functionality
+        // Business-focused categories for construction/service companies
         const categories = [
-            { id: 1, name: 'Alimentação', description: 'Gastos com comida e bebidas' },
-            { id: 2, name: 'Transporte', description: 'Combustível, transporte público, Uber' },
-            { id: 3, name: 'Moradia', description: 'Aluguel, condomínio, IPTU' },
-            { id: 4, name: 'Saúde', description: 'Consultas, medicamentos, plano de saúde' },
-            { id: 5, name: 'Educação', description: 'Cursos, livros, materiais' },
-            { id: 6, name: 'Lazer', description: 'Cinema, restaurantes, viagens' },
-            { id: 7, name: 'Roupas', description: 'Vestuário e acessórios' },
-            { id: 8, name: 'Tecnologia', description: 'Eletrônicos, softwares, internet' },
-            { id: 9, name: 'Casa', description: 'Móveis, decoração, utensílios' },
-            { id: 10, name: 'Outros', description: 'Gastos diversos' }
+            { id: 1, name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas' },
+            { id: 2, name: 'Material', description: 'Materiais de construção e insumos' },
+            { id: 3, name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada' },
+            { id: 4, name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados' },
+            { id: 5, name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas' },
+            { id: 6, name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos' }
         ];
 
         // Populate category dropdown

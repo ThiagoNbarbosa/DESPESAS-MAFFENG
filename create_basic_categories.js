@@ -15,18 +15,14 @@ async function createBasicCategories() {
     try {
         console.log('Creating basic categories...');
         
-        // Insert basic categories (just name and description)
+        // Business-focused categories for construction/service companies
         const categories = [
-            { name: 'Alimentação', description: 'Gastos com comida e bebidas' },
-            { name: 'Transporte', description: 'Combustível, transporte público, Uber' },
-            { name: 'Moradia', description: 'Aluguel, condomínio, IPTU' },
-            { name: 'Saúde', description: 'Consultas, medicamentos, plano de saúde' },
-            { name: 'Educação', description: 'Cursos, livros, materiais' },
-            { name: 'Lazer', description: 'Cinema, restaurantes, viagens' },
-            { name: 'Roupas', description: 'Vestuário e acessórios' },
-            { name: 'Tecnologia', description: 'Eletrônicos, softwares, internet' },
-            { name: 'Casa', description: 'Móveis, decoração, utensílios' },
-            { name: 'Outros', description: 'Gastos diversos' }
+            { name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas' },
+            { name: 'Material', description: 'Materiais de construção e insumos' },
+            { name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada' },
+            { name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados' },
+            { name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas' },
+            { name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos' }
         ];
 
         const { data: insertData, error: insertError } = await supabase
