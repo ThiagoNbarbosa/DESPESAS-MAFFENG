@@ -827,6 +827,24 @@ input[readonly] {
     background: #f8f9ff;
 }
 
+/* Required field styling for file input */
+input[type="file"][required] + .file-input-display {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+
+input[type="file"][required]:valid + .file-input-display {
+    border-color: #28a745;
+    background: #f8fff8;
+}
+
+/* File selected state */
+.file-input-display.file-selected {
+    border-color: #28a745;
+    background: #f8fff8;
+    color: #28a745;
+}
+
 .file-input-display i {
     font-size: 2rem;
     margin-bottom: 0.5rem;

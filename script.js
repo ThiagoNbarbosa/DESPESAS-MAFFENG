@@ -264,12 +264,15 @@ function setupEventListeners() {
     // File input display
     const fileInput = document.getElementById('imagem');
     const fileDisplay = document.querySelector('.file-input-display span');
+    const fileDisplayContainer = document.querySelector('.file-input-display');
     
     fileInput.addEventListener('change', function(e) {
         if (e.target.files.length > 0) {
             fileDisplay.textContent = e.target.files[0].name;
+            fileDisplayContainer.classList.add('file-selected');
         } else {
             fileDisplay.textContent = 'Clique para selecionar uma imagem';
+            fileDisplayContainer.classList.remove('file-selected');
         }
     });
 }
@@ -628,6 +631,7 @@ async function handleFormSubmit(e) {
         const imageFile = formData.get('imagem');
         if (!imageFile || imageFile.size === 0) {
             showNotification('Por favor, selecione uma imagem do comprovante', 'error');
+            showLoading(false);
             return;
         }
         
