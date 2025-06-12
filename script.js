@@ -307,6 +307,7 @@ function closeModal() {
     
     // Reset file input display
     document.querySelector('.file-input-display span').textContent = 'Clique para selecionar uma imagem';
+    document.querySelector('.file-input-display').classList.remove('file-selected');
 }
 
 // Handle payment method change
