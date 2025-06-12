@@ -1085,3 +1085,19 @@ input[type="file"][required]:valid + .file-input-display {
     white-space: pre;
     display: block;
 }
+
+/* Category Badge Styling */
+.category-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    display: inline-block;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

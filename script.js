@@ -193,17 +193,22 @@ async function handleLogout() {
     }
 }
 
-// Load categories from database
+// Load categories (hardcoded for now)
 async function loadCategories() {
     try {
-        const { data: categories, error } = await supabase
-            .from('categories')
-            .select('*')
-            .order('name');
-
-        if (error) {
-            throw error;
-        }
+        // Hardcoded categories for immediate functionality
+        const categories = [
+            { id: 1, name: 'Alimentação', description: 'Gastos com comida e bebidas' },
+            { id: 2, name: 'Transporte', description: 'Combustível, transporte público, Uber' },
+            { id: 3, name: 'Moradia', description: 'Aluguel, condomínio, IPTU' },
+            { id: 4, name: 'Saúde', description: 'Consultas, medicamentos, plano de saúde' },
+            { id: 5, name: 'Educação', description: 'Cursos, livros, materiais' },
+            { id: 6, name: 'Lazer', description: 'Cinema, restaurantes, viagens' },
+            { id: 7, name: 'Roupas', description: 'Vestuário e acessórios' },
+            { id: 8, name: 'Tecnologia', description: 'Eletrônicos, softwares, internet' },
+            { id: 9, name: 'Casa', description: 'Móveis, decoração, utensílios' },
+            { id: 10, name: 'Outros', description: 'Gastos diversos' }
+        ];
 
         // Populate category dropdown
         const categorySelect = document.getElementById('category_id');
@@ -796,7 +801,7 @@ function renderExpenses() {
     expensesTbody.innerHTML = filteredExpenses.map(expense => `
         <tr class="expense-row ${expense.status === 'pago' ? 'expense-paid' : ''}" data-expense-id="${expense.id}">
             <td>${expense.item}</td>
-            <td><span class="category-badge">${expense.categories ? expense.categories.name : 'Sem categoria'}</span></td>
+            <td><span class="category-badge">${getCategoryName(expense.category_id)}</span></td>
             <td>R$ ${formatCurrencyDisplay(expense.valor)}</td>
             <td><span class="payment-badge ${getPaymentClass(expense.forma_pagamento)}">${expense.forma_pagamento}</span></td>
             <td>${formatInstallments(expense.parcela_atual, expense.total_parcelas)}</td>
