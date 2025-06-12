@@ -623,7 +623,7 @@ async function handleFormSubmit(e) {
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
-            category_id: formData.get('category_id'),
+            category_id: formData.get('category_id') ? parseInt(formData.get('category_id')) : null,
             parcela_atual: 1, 
             total_parcelas: 1, // Always set to 1 since we're not creating installments anymore
             valor_total: getNumericValue(formData.get('valor')), // Use the same value for total
