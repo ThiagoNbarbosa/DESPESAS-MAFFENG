@@ -196,14 +196,14 @@ async function handleLogout() {
 // Load categories (hardcoded for now)
 async function loadCategories() {
     try {
-        // Business-focused categories for construction/service companies
+        // Business-focused categories for construction/service companies (using real database UUIDs)
         const categories = [
-            { id: 1, name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas' },
-            { id: 2, name: 'Material', description: 'Materiais de construção e insumos' },
-            { id: 3, name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada' },
-            { id: 4, name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados' },
-            { id: 5, name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas' },
-            { id: 6, name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos' }
+            { id: 'ae285d84-f8e9-44b5-bbdc-873cf3f2004c', name: 'Aluguel de ferramentas', description: 'Locação de equipamentos e ferramentas' },
+            { id: '80b32dda-7732-4cf6-b905-efb2cfdb85f4', name: 'Manutenção em veículo', description: 'Manutenção, combustível e reparos de veículos' },
+            { id: '14623dfe-5abc-4016-9dbe-b8114cd31672', name: 'Mão de Obra', description: 'Serviços de mão de obra terceirizada' },
+            { id: '5ea857de-736f-48b6-90e0-a8c8f0fd2089', name: 'Material', description: 'Materiais de construção e insumos' },
+            { id: '392e4150-82f5-48b2-93d0-66db46056118', name: 'Pagamento funcionários', description: 'Salários, benefícios e encargos trabalhistas' },
+            { id: '71d03122-fd05-4685-a969-ebfafb31f7e4', name: 'Prestador de serviços', description: 'Contratação de prestadores de serviços especializados' }
         ];
 
         // Populate category dropdown
@@ -623,7 +623,7 @@ async function handleFormSubmit(e) {
             valor: getNumericValue(formData.get('valor')),
             forma_pagamento: formData.get('forma_pagamento'),
             data_vencimento: formData.get('data_vencimento'),
-            category_id: formData.get('category_id') ? parseInt(formData.get('category_id')) : null,
+            category_id: formData.get('category_id') || null,
             parcela_atual: 1, 
             total_parcelas: 1, // Always set to 1 since we're not creating installments anymore
             valor_total: getNumericValue(formData.get('valor')), // Use the same value for total
