@@ -51,6 +51,7 @@ async function checkExistingAuth() {
         }
     } catch (error) {
         console.log('No existing authentication found');
+        // Don't redirect on auth errors from login page
     }
 }
 

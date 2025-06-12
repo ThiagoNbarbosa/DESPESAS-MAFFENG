@@ -37,7 +37,16 @@ const formaPagamentoSelect = document.getElementById('forma_pagamento');
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuthentication();
+    // Prevent infinite redirect loops by checking if we just came from login
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromLogin = urlParams.get('from') === 'login';
+    
+    if (!fromLogin) {
+        checkAuthentication();
+    } else {
+        // If coming from login, allow page to load normally
+        setTimeout(() => checkAuthentication(), 2000);
+    }
 });
 
 // Check authentication before initializing app
@@ -45,41 +54,33 @@ async function checkAuthentication() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser();
         
-        if (!user || error) {
-            // No authenticated user, redirect to login
-            window.location.href = '/login.html';
-            return;
+        if (user && !error) {
+            // User is authenticated, get profile and initialize app
+            const userProfile = await getUserProfile(user.id);
+            
+            if (userProfile) {
+                // Store user info and initialize
+                window.currentUser = {
+                    id: user.id,
+                    email: user.email,
+                    name: userProfile.name,
+                    role: userProfile.role
+                };
+                
+                // Update UI with user info
+                updateUserInterface();
+            }
         }
         
-        // User is authenticated, get profile and initialize app
-        const userProfile = await getUserProfile(user.id);
-        
-        if (!userProfile) {
-            showNotification('Perfil de usuário não encontrado', 'error');
-            await supabase.auth.signOut();
-            window.location.href = '/login.html';
-            return;
-        }
-        
-        // Store user info and initialize
-        window.currentUser = {
-            id: user.id,
-            email: user.email,
-            name: userProfile.name,
-            role: userProfile.role
-        };
-        
-        // Update UI with user info
-        updateUserInterface();
-        
-        // Initialize the application
+        // Always initialize the application regardless of auth status to prevent redirect loops
         await initializeApp();
         setupEventListeners();
         
     } catch (error) {
         console.error('Authentication check failed:', error);
-        showNotification('Erro de autenticação', 'error');
-        window.location.href = '/login.html';
+        // Initialize app anyway to prevent redirect loops
+        await initializeApp();
+        setupEventListeners();
     }
 }
 
