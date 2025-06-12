@@ -60,10 +60,10 @@ async function tryGetCurrentUser() {
                 window.currentUser = {
                     id: user.id,
                     email: user.email,
-                    name: userProfile.name,
+                    name: capitalizeWords(userProfile.name),
                     role: userProfile.role
                 };
-                console.log('User authenticated:', userProfile.name);
+                console.log('User authenticated:', capitalizeWords(userProfile.name));
             }
         }
     } catch (error) {
@@ -262,6 +262,14 @@ function setupEventListeners() {
     });
 }
 
+// Capitalize first letter of each word
+function capitalizeWords(str) {
+    if (!str) return str;
+    return str.split(' ')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(' ');
+}
+
 // Open modal
 function openModal() {
     expenseModal.style.display = 'block';
@@ -270,11 +278,11 @@ function openModal() {
     // Auto-fill user field with current user or default
     const userInput = document.getElementById('usuario_criacao');
     if (window.currentUser && window.currentUser.name) {
-        userInput.value = window.currentUser.name;
+        userInput.value = capitalizeWords(window.currentUser.name);
     } else {
         // Fallback to saved user name or default user
         const savedUser = localStorage.getItem('tms_usuario');
-        userInput.value = savedUser || 'Usuário Padrão';
+        userInput.value = capitalizeWords(savedUser || 'Usuário Padrão');
     }
 }
 
@@ -428,7 +436,7 @@ function openDetailsModal(expense, relatedExpenses) {
             <div class="overview-grid">
                 <div class="overview-item">
                     <span class="overview-label">Usuário</span>
-                    <span class="overview-value">${expense.usuario_criacao || 'Não informado'}</span>
+                    <span class="overview-value">${capitalizeWords(expense.usuario_criacao) || 'Não informado'}</span>
                 </div>
                 <div class="overview-item">
                     <span class="overview-label">Data de Vencimento</span>
@@ -571,6 +579,9 @@ async function handleFormSubmit(e) {
         } else if (!userName) {
             userName = localStorage.getItem('tms_usuario') || 'Usuário Padrão';
         }
+        
+        // Ensure name is properly capitalized
+        userName = capitalizeWords(userName);
 
         const expenseData = {
             usuario_criacao: userName,
@@ -599,8 +610,8 @@ async function handleFormSubmit(e) {
             throw error;
         }
         
-        // Save user name for future use
-        localStorage.setItem('tms_usuario', expenseData.usuario_criacao);
+        // Save user name for future use (properly capitalized)
+        localStorage.setItem('tms_usuario', userName);
         
         showNotification('Despesa adicionada com sucesso!', 'success');
         closeModal();
