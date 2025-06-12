@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
         supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
         console.log('Supabase initialized for login');
         
-        // Check if user is already logged in
-        checkExistingAuth();
+        // Temporarily disabled to prevent redirect loop
+        // checkExistingAuth();
     } else {
         console.error('Supabase configuration missing');
         showNotification('Erro de configuração do sistema', 'error');

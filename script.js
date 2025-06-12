@@ -37,51 +37,21 @@ const formaPagamentoSelect = document.getElementById('forma_pagamento');
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
-    // Prevent infinite redirect loops by checking if we just came from login
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromLogin = urlParams.get('from') === 'login';
-    
-    if (!fromLogin) {
-        checkAuthentication();
-    } else {
-        // If coming from login, allow page to load normally
-        setTimeout(() => checkAuthentication(), 2000);
-    }
+    // Initialize app without authentication check to prevent redirect loops
+    initializeApp().then(() => {
+        setupEventListeners();
+        console.log('App initialized successfully');
+    }).catch(error => {
+        console.error('Error initializing app:', error);
+        // Still set up event listeners even if initialization fails
+        setupEventListeners();
+    });
 });
 
-// Check authentication before initializing app
+// Check authentication before initializing app (disabled to prevent redirect loops)
 async function checkAuthentication() {
-    try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (user && !error) {
-            // User is authenticated, get profile and initialize app
-            const userProfile = await getUserProfile(user.id);
-            
-            if (userProfile) {
-                // Store user info and initialize
-                window.currentUser = {
-                    id: user.id,
-                    email: user.email,
-                    name: userProfile.name,
-                    role: userProfile.role
-                };
-                
-                // Update UI with user info
-                updateUserInterface();
-            }
-        }
-        
-        // Always initialize the application regardless of auth status to prevent redirect loops
-        await initializeApp();
-        setupEventListeners();
-        
-    } catch (error) {
-        console.error('Authentication check failed:', error);
-        // Initialize app anyway to prevent redirect loops
-        await initializeApp();
-        setupEventListeners();
-    }
+    console.log('Authentication check disabled to prevent redirect loops');
+    return;
 }
 
 // Get user profile from database
