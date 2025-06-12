@@ -548,9 +548,6 @@ function closeDetailsModal() {
     document.body.style.overflow = 'auto';
 }
 
-// Calculate total value automatically
-
-
 // Handle form submission
 async function handleFormSubmit(e) {
     e.preventDefault();
@@ -609,46 +606,6 @@ async function handleFormSubmit(e) {
         showNotification('Erro ao salvar despesa: ' + error.message, 'error');
     } finally {
         showLoading(false);
-    }
-}
-
-// Create future installments for parcelated expenses
-async function createFutureInstallments(firstInstallment, originalData) {
-    try {
-        const futureInstallments = [];
-        const baseDate = new Date(originalData.data_vencimento);
-        
-        for (let i = 2; i <= originalData.total_parcelas; i++) {
-            const nextDate = new Date(baseDate);
-            nextDate.setMonth(nextDate.getMonth() + (i - 1));
-            
-            const futureInstallment = {
-                usuario_criacao: originalData.usuario_criacao,
-                item: originalData.item,
-                valor: originalData.valor,
-                forma_pagamento: originalData.forma_pagamento,
-                data_vencimento: nextDate.toISOString().split('T')[0],
-                parcela_atual: i,
-                total_parcelas: originalData.total_parcelas,
-                valor_total: originalData.valor_total,
-                imagem_url: originalData.imagem_url,
-                status: 'pendente',
-                despesa_pai_id: firstInstallment.id
-            };
-            
-            futureInstallments.push(futureInstallment);
-        }
-        
-        const { error } = await supabase
-            .from('despesas')
-            .insert(futureInstallments);
-            
-        if (error) {
-            console.error('Error creating future installments:', error);
-        }
-        
-    } catch (error) {
-        console.error('Error in createFutureInstallments:', error);
     }
 }
 
