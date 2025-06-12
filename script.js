@@ -34,8 +34,6 @@ const loadingOverlay = document.getElementById('loading-overlay');
 const monthlyTotal = document.getElementById('monthly-total');
 const totalExpenses = document.getElementById('total-expenses');
 const formaPagamentoSelect = document.getElementById('forma_pagamento');
-const parcelasSection = document.querySelector('.parcelas-section');
-const valorTotalSection = document.querySelector('.valor-total-section');
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
@@ -231,15 +229,8 @@ function setupEventListeners() {
     // Payment method change
     formaPagamentoSelect.addEventListener('change', handlePaymentMethodChange);
     
-    // Auto-calculate total value and currency formatting
+    // Currency formatting
     document.getElementById('valor').addEventListener('input', function(e) {
-        formatCurrencyInput(e.target);
-        calculateTotalValue();
-    });
-    document.getElementById('total_parcelas').addEventListener('input', calculateTotalValue);
-    
-    // Format currency on valor_total when it changes
-    document.getElementById('valor_total').addEventListener('input', function(e) {
         formatCurrencyInput(e.target);
     });
     
@@ -295,59 +286,17 @@ function closeModal() {
     document.body.style.overflow = 'auto';
     expenseForm.reset();
     
-    // Reset form sections
-    parcelasSection.style.display = 'none';
-    valorTotalSection.style.display = 'none';
-    parcelasSection.classList.remove('show');
-    valorTotalSection.classList.remove('show');
-    
-    // Reset labels
-    document.querySelector('.label-parcela').style.display = 'none';
-    document.querySelector('.label-valor').style.display = 'inline';
+    // No special form sections to reset since installment fields were removed
     
     // Reset file input display
     document.querySelector('.file-input-display span').textContent = 'Clique para selecionar uma imagem';
     document.querySelector('.file-input-display').classList.remove('file-selected');
 }
 
-// Handle payment method change
+// Handle payment method change (simplified - no installments)
 function handlePaymentMethodChange(e) {
-    const paymentMethod = e.target.value;
-    const isInstallmentPayment = paymentMethod === 'cartao_credito' || paymentMethod === 'boleto_prazo';
-    
-    const labelParcela = document.querySelector('.label-parcela');
-    const labelValor = document.querySelector('.label-valor');
-    
-    // For installment payments, hide installment fields and show only total value
-    if (isInstallmentPayment) {
-        // Hide installment sections
-        parcelasSection.style.display = 'none';
-        valorTotalSection.style.display = 'none';
-        parcelasSection.classList.remove('show');
-        valorTotalSection.classList.remove('show');
-        
-        // Keep label as "Valor" (total expense value)
-        labelParcela.style.display = 'none';
-        labelValor.style.display = 'inline';
-        
-        // Clear installment fields
-        document.getElementById('total_parcelas').value = '';
-        document.getElementById('valor_total').value = '';
-    } else {
-        // For other payment methods, hide installment sections
-        parcelasSection.style.display = 'none';
-        valorTotalSection.style.display = 'none';
-        parcelasSection.classList.remove('show');
-        valorTotalSection.classList.remove('show');
-        
-        // Keep label as "Valor"
-        labelParcela.style.display = 'none';
-        labelValor.style.display = 'inline';
-        
-        // Clear installment fields
-        document.getElementById('total_parcelas').value = '';
-        document.getElementById('valor_total').value = '';
-    }
+    // No special handling needed since we removed installment fields
+    // This function can remain for future extensibility
 }
 
 // Format currency input with Brazilian formatting
@@ -600,23 +549,7 @@ function closeDetailsModal() {
 }
 
 // Calculate total value automatically
-function calculateTotalValue() {
-    const valorParcelaFormatted = document.getElementById('valor').value;
-    const valorParcela = getNumericValue(valorParcelaFormatted);
-    const totalParcelas = parseInt(document.getElementById('total_parcelas').value) || 1;
-    const valorTotal = valorParcela * totalParcelas;
-    
-    if (valorParcela > 0 && totalParcelas > 0) {
-        const valorTotalInput = document.getElementById('valor_total');
-        const formatted = valorTotal.toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        valorTotalInput.value = formatted;
-    } else {
-        document.getElementById('valor_total').value = '';
-    }
-}
+
 
 // Handle form submission
 async function handleFormSubmit(e) {
