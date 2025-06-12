@@ -52,17 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // Try to get current user info without redirecting
 async function tryGetCurrentUser() {
     try {
-        // Development bypass for testing categorization system
-        window.currentUser = {
-            id: 'dev-user-123',
-            email: 'dev@exemplo.com',
-            name: 'Usuário Desenvolvimento',
-            role: 'admin'
-        };
-        console.log('Development user set:', window.currentUser.name);
-        return;
-        
-        /* Original authentication code
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (user && !error) {
@@ -77,15 +66,8 @@ async function tryGetCurrentUser() {
                 console.log('User authenticated:', capitalizeWords(userProfile.name));
             }
         }
-        */
     } catch (error) {
-        console.log('Authentication bypassed for development');
-        window.currentUser = {
-            id: 'dev-user-123',
-            email: 'dev@exemplo.com',
-            name: 'Usuário Desenvolvimento',
-            role: 'admin'
-        };
+        console.log('No authenticated user found');
     }
 }
 
@@ -246,16 +228,6 @@ async function loadCategories() {
         console.error('Error loading categories:', error);
         showNotification('Erro ao carregar categorias', 'error');
     }
-}
-
-// Helper function to get category name by ID
-function getCategoryName(categoryId) {
-    if (!categoryId || !window.expenseCategories) {
-        return 'Sem categoria';
-    }
-    
-    const category = window.expenseCategories.find(cat => cat.id == categoryId);
-    return category ? category.name : 'Sem categoria';
 }
 
 // Initialize the application
