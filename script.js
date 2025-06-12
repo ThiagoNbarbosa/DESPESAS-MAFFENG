@@ -226,6 +226,16 @@ async function loadCategories() {
     }
 }
 
+// Get category name by ID
+function getCategoryName(categoryId) {
+    if (!categoryId || !window.expenseCategories) {
+        return 'Sem categoria';
+    }
+    
+    const category = window.expenseCategories.find(cat => cat.id === categoryId);
+    return category ? category.name : 'Categoria não encontrada';
+}
+
 // Initialize the application
 async function initializeApp() {
     try {
